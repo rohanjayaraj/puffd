@@ -1,0 +1,660 @@
+<html>
+  <head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+    
+    var ycsbData = $.ajax({
+          url: "http://10.10.88.136/puffd/data.php",
+          dataType: "json",
+          async: false
+          }).responseText;
+
+    var tabledata;
+
+    var table;
+    var tpchart;
+    var ravgchart;
+    var rminchart;
+    var rmaxchart;
+    var rp95chart;
+    var rp99chart;
+    var wavgchart;
+    var wminchart;
+    var wmaxchart;
+    var wp95chart;
+    var wp99chart;
+    
+
+    var selectedRows = [];
+
+    // Load the Visualization API and the piechart package.
+    //google.charts.load('current', {'packages':['table']});
+    google.charts.load('current', {'packages':['corechart', 'table']});
+      
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.charts.setOnLoadCallback(drawRunInfoTable);
+
+    google.charts.setOnLoadCallback(init);
+
+     
+     function init(){
+      
+      // Draw Throughput 
+      drawThroughputChart();
+      // Draw Read Avg 
+      drawReadAvgChart();
+      // Draw Min Avg 
+      drawReadMinChart();
+      // Draw Read Max laten
+      drawReadMaxChart();
+      drawReadp95Chart();
+      drawReadp99Chart();
+
+      // Draw write charts
+      drawWriteAvgChart();
+      drawWriteMinChart();
+      drawWriteMaxChart();
+      drawWritep95Chart();
+      drawWritep99Chart();
+     }
+
+     function selectHandler(e) {
+      var selection = table.getSelection();
+      var message = '';
+      var timestamp;
+      for (var i = 0; i < selection.length; i++) {
+        var item = selection[i];
+        if (item.row != null) {
+          var str = tabledata.getFormattedValue(item.row, 0);
+          timestamp=timestamp==null?str:timestamp+","+str;
+          message += '{row:' + item.row + ', column:none}; value (col 0) = ' + str + '\n';
+        }
+      }
+      if (timestamp == null) {
+        message = 'nothing';
+      }else{
+         ycsbData = $.ajax({
+          url: "http://10.10.88.136/puffd/data.php?timestamp="+timestamp,
+          dataType: "json",
+          async: false
+          }).responseText;
+          //alert('You selected ' + timestamp);
+          //console.log(ycsbData);
+      }
+     
+      init();
+    }
+
+    function drawRunInfoTable() {
+      var ycsbMetadata = $.ajax({
+          url: "http://10.10.88.136/puffd/meta.php",
+          dataType: "json",
+          async: false
+          }).responseText;
+      var jsonData = JSON.parse(ycsbMetadata);
+      tabledata = new google.visualization.DataTable();
+
+      tabledata.addColumn('string', 'RunID');
+      tabledata.addColumn('string', 'Description');
+      tabledata.addColumn('string', 'Date');
+      tabledata.addColumn('string', 'OS');
+      tabledata.addColumn('string', 'Build');
+      tabledata.addColumn('string', 'Node');
+      tabledata.addColumn('string', 'RowSize');
+      tabledata.addColumn('number', 'DataSize (GB)');
+      tabledata.addColumn('number', '#ofTables');
+      tabledata.addColumn('number', '#ofRegions');
+      tabledata.addColumn('number', '#ofNodes');
+      tabledata.addColumn('number', '#ofClients');
+      tabledata.addColumn('string', 'Network');
+
+      for ( var i = 0; i < jsonData.length; i++) {
+         var date = new Date(jsonData[i].timestamp);
+         var datasize = jsonData[i].datasize/(1024*1024*1024);
+         tabledata.addRow([""+jsonData[i].timestamp, jsonData[i].description, date.toString(), jsonData[i].os, jsonData[i].build, jsonData[i].driver, ""+jsonData[i].rowsize, datasize, jsonData[i].numtables, jsonData[i].numregions, jsonData[i].numnodes, jsonData[i].numclients,  jsonData[i].network]);
+      }
+
+      table = new google.visualization.Table(document.getElementById('runinfo_table_div'));
+      table.draw(tabledata, {showRowNumber: true, width: '100%'});
+
+      google.visualization.events.addListener(table, 'select', selectHandler);
+    }
+
+    function drawThroughputChart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         //console.log(jsonData[i]);
+         var cols = [];
+         var rundata=jsonData[i].data;
+         if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+          for ( var j = 0; j < rundata.length; j++) {
+             colheaders[j]=rundata[j].wrkldid;
+             cols[j+1]=rundata[j].throughput;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Throughput',
+        vAxis: {title: 'Ops/Sec/Client'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+      if(tpchart == null) {
+        tpchart = new google.visualization.ComboChart(document.getElementById('tp_div'));
+        //console.log("yeahhhhh");
+      }
+      tpchart.draw(data, options);
+    }
+
+    function drawReadAvgChart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+         if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+         var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(rundata[j].wrkldtype == "LOAD"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].ravg;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Read Average Latency',
+        vAxis: {title: 'μs'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+      if(ravgchart == null) {
+        ravgchart = new google.visualization.ComboChart(document.getElementById('ravg_div'));
+      }
+      ravgchart.draw(data, options);
+    }
+
+    function drawReadMinChart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+          if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+          var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(rundata[j].wrkldtype == "LOAD"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].rmin;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Read Min Latency',
+        vAxis: {title: 'μs'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+      if(rminchart == null) {
+        rminchart = new google.visualization.ComboChart(document.getElementById('rmin_div'));
+      }
+      rminchart.draw(data, options);
+    }
+    
+     function drawReadMaxChart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+          if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+          var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(rundata[j].wrkldtype == "LOAD"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].rmax;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Read Max Latency',
+        vAxis: {title: 'μs'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+      if(rmaxchart == null){
+        rmaxchart = new google.visualization.ComboChart(document.getElementById('rmax_div'));
+      }
+      rmaxchart.draw(data, options);
+    }
+
+    function drawReadp95Chart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+         if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+          var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(rundata[j].wrkldtype == "LOAD"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].rp95;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Read 95%ile Latency',
+        vAxis: {title: 'ms'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+       if(rp95chart == null){
+         rp95chart = new google.visualization.ComboChart(document.getElementById('rp95_div'));
+       }
+      rp95chart.draw(data, options);
+    }
+
+    function drawReadp99Chart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+         if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+          var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(rundata[j].wrkldtype == "LOAD"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].rp99;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Read 99%ile Latency',
+        vAxis: {title: 'ms'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+       if(rp99chart == null){
+          rp99chart = new google.visualization.ComboChart(document.getElementById('rp99_div'));
+      }
+      rp99chart.draw(data, options);
+    }
+
+    function drawWriteAvgChart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+          if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+         var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].wavg;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Write Average Latency',
+        vAxis: {title: 'μs'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+      if(wavgchart == null) {
+        wavgchart = new google.visualization.ComboChart(document.getElementById('wavg_div'));
+      }
+      wavgchart.draw(data, options);
+    }
+
+    function drawWriteMinChart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+          if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+          var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].wmin;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Write Min Latency',
+        vAxis: {title: 'μs'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+      if(wminchart == null) {
+        wminchart = new google.visualization.ComboChart(document.getElementById('wmin_div'));
+      }
+      wminchart.draw(data, options);
+    }
+    
+     function drawWriteMaxChart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+          if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+          var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].wmax;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Write Max Latency',
+        vAxis: {title: 'μs'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+      if(wmaxchart == null){
+        wmaxchart = new google.visualization.ComboChart(document.getElementById('wmax_div'));
+      }
+      wmaxchart.draw(data, options);
+    }
+
+    function drawWritep95Chart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+          if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+          var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].wp95;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Write 95%ile Latency',
+        vAxis: {title: 'ms'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+       if(wp95chart == null){
+         wp95chart = new google.visualization.ComboChart(document.getElementById('wp95_div'));
+       }
+      wp95chart.draw(data, options);
+    }
+
+    function drawWritep99Chart() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      var colheaders = [];
+      for ( var i = 0; i < jsonData.length; i++) {
+         var cols = [];
+         var rundata=jsonData[i].data;
+          if (jsonData[i].description != null) {
+            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+          }else{
+            cols[0]=""+jsonData[i].timestamp;
+          }
+          var idx = 0;
+          for ( var j = 0; j < rundata.length; j++) {
+           if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN"){
+              continue;
+            }
+             colheaders[idx]=rundata[j].wrkldid;
+             cols[idx+1]=rundata[j].wp99;
+             idx++;
+           }
+           if(i==0){
+             for(var k=0; k < colheaders.length; k++){
+               data.addColumn('number', colheaders[k]);
+             }
+           }
+           data.addRow(cols);
+      }
+
+      var options = {
+        title : 'Write 99%ile Latency',
+        vAxis: {title: 'ms'},
+        hAxis: {title: 'Run'},
+        seriesType: 'bars'
+      };
+
+       if(wp99chart == null){
+        wp99chart = new google.visualization.ComboChart(document.getElementById('wp99_div'));
+      }
+      wp99chart.draw(data, options);
+    }
+
+    </script>
+  </head>
+
+  <body>
+    <!--Div that will hold the pie chart-->
+    <div id="runinfo_table_div"></div>
+
+    <br>
+    <br>
+    <br>
+   
+    <!--div id="table_div"></div-->
+    <style>
+        table.equalDevide tr td { width:50%;}
+    </style>
+
+
+    <table class="equalDevide" cellpadding="0" cellspacing="0" width="100%" border="0">
+    <tr>
+        <div id="tp_div" style="height: 400px;"></div>
+    </tr>
+    <tr>
+        <td>
+          <div id="ravg_div" style="height: 400px;"></div>
+        </td>
+        <td>
+           <div id="wavg_div" style="height: 400px;"></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+          <div id="rmax_div" style="height: 400px;"></div>
+        </td>
+         <td>
+          <div id="wmax_div" style="height: 400px;"></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+          <div id="rmin_div" style="height: 400px;"></div>
+        </td>
+        <td>
+          <div id="wmin_div" style="height: 400px;"></div>
+        </td>
+     </tr>
+      <tr>
+         <td>
+         <div id="rp95_div" style="height: 400px;"></div>
+        </td>
+         <td>
+         <div id="wp95_div" style="height: 400px;"></div>
+        </td>
+    </tr>
+    <tr>
+         <td>
+          <div id="rp99_div" style="height: 400px;"></div>
+        </td>
+        <td>
+          <div id="wp99_div" style="height: 400px;"></div>
+        </td>
+    </tr>
+    </table>
+
+    
+  </body>
+</html>
