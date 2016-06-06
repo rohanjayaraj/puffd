@@ -1,17 +1,47 @@
 <html>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <head>
+  <style type='text/css'>
+  .bold-font {
+    font-weight: bold;
+  }
+
+  .italic-font {
+    font-style: italic;
+  }
+
+  .large-font {
+    font-size: 15px;
+  }
+
+  .grey-background {
+    background-color: #EAEDED;
+  }
+
+  .blue-text {
+    color: #3498DB;
+  }
+
+</style>
     <!--Load the AJAX API-->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript">
     
+    var urlts = getUrlVars()["runid"];
+    var pbuild = getUrlVars()["build"];
+    var pos = getUrlVars()["os"];
+    var pdriver = getUrlVars()["driver"];
+    var url = "http://10.10.88.136/puffd/data.php";
+    url=urlts==null?url:url+"?timestamp="+urlts;
     var ycsbData = $.ajax({
-          url: "http://10.10.88.136/puffd/data.php",
+          url: url,
           dataType: "json",
           async: false
           }).responseText;
 
     var tabledata;
+    var tablerows = 10;
 
     var table;
     var tpchart;
@@ -38,7 +68,29 @@
 
     google.charts.setOnLoadCallback(init);
 
+     function getUrlVars() {
+        var vars = {};
+        var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+        });
+        return vars;
+      }
+
+      function onLoadParams(){
+        var myPopup = document.getElementById('tablelimit');
+        for (var i = 0; i < myPopup.options.length; i++) {
+            if (myPopup.options[i].value == tablerows)
+                myPopup.options[i].selected = true;
+        }
+      }
      
+     function clearParams(){
+        urlts = null;
+        pbuild = null;
+        pos = null;
+        pdriver = null;
+     }
+
      function init(){
       
       // Draw Throughput 
@@ -58,6 +110,12 @@
       drawWriteMaxChart();
       drawWritep95Chart();
       drawWritep99Chart();
+     }
+
+     function changeTableList(){
+         tablerows = document.getElementById("tablelimit").value;
+         urlts=null;
+         drawRunInfoTable();
      }
 
      function selectHandler(e) {
@@ -82,17 +140,49 @@
           }).responseText;
           //alert('You selected ' + timestamp);
           //console.log(ycsbData);
+          var newurl = window.location.href;    
+          if (newurl.indexOf('?') == -1){
+             newurl += '?runid='+timestamp;
+          }else{
+            newurl = newurl.substring(0, newurl.indexOf('?')) + '?runid='+timestamp;
+          }
+          window.history.replaceState("object or string", "Title", newurl);
       }
      
       init();
     }
 
     function drawRunInfoTable() {
+      var lurl = "http://10.10.88.136/puffd/meta.php";
+      var param=false;
+      if(pbuild != null || pos != null || pdriver != null || urlts != null)
+      {
+        if(pbuild != null){
+            lurl+="?build="+pbuild;
+            param=true;
+        }
+        if(pos != null){
+            lurl+=(param?"&os=":"?os=")+pos;
+            param=true;
+        }
+        if(pdriver != null){
+            lurl+=(param?"&driver=":"?driver=")+pdriver;
+            param=true;
+        }
+        if(urlts != null){
+            lurl+=(param?"&timestamp=":"?timestamp=")+urlts;
+        } 
+        tablerows=0;
+        onLoadParams();
+      }else if(tablerows != 0){
+           lurl+="?rows="+tablerows
+      } 
       var ycsbMetadata = $.ajax({
-          url: "http://10.10.88.136/puffd/meta.php",
+          url: lurl,
           dataType: "json",
           async: false
           }).responseText;
+      //alert('Metadata ' + ycsbMetadata);
       var jsonData = JSON.parse(ycsbMetadata);
       tabledata = new google.visualization.DataTable();
 
@@ -101,25 +191,52 @@
       tabledata.addColumn('string', 'Date');
       tabledata.addColumn('string', 'OS');
       tabledata.addColumn('string', 'Build');
-      tabledata.addColumn('string', 'Node');
-      tabledata.addColumn('string', 'RowSize');
-      tabledata.addColumn('number', 'DataSize (GB)');
-      tabledata.addColumn('number', '#ofTables');
-      tabledata.addColumn('number', '#ofRegions');
-      tabledata.addColumn('number', '#ofNodes');
-      tabledata.addColumn('number', '#ofClients');
+      tabledata.addColumn('string', 'Driver Node');
+      tabledata.addColumn('string', 'Row Size');
+      tabledata.addColumn('number', 'Data Size (GB)');
+      tabledata.addColumn('number', '# of Tables');
+      tabledata.addColumn('number', '# of Regions');
+      tabledata.addColumn('number', '# of Nodes');
+      tabledata.addColumn('number', '# of Clients');
       tabledata.addColumn('string', 'Network');
+      tabledata.addColumn('number', '# of CPUs');
+      tabledata.addColumn('number', 'Memory (GB)');
+      tabledata.addColumn('number', 'Disk Space (TB)');
+      tabledata.addColumn('string', 'Disk Type');
+      tabledata.addColumn('number', '# of Disks/node');
+      tabledata.addColumn('number', '# of MFS');
 
       for ( var i = 0; i < jsonData.length; i++) {
          var date = new Date(jsonData[i].timestamp);
          var datasize = jsonData[i].datasize/(1024*1024*1024);
-         tabledata.addRow([""+jsonData[i].timestamp, jsonData[i].description, date.toString(), jsonData[i].os, jsonData[i].build, jsonData[i].driver, ""+jsonData[i].rowsize, datasize, jsonData[i].numtables, jsonData[i].numregions, jsonData[i].numnodes, jsonData[i].numclients,  jsonData[i].network]);
+         tabledata.addRow([""+jsonData[i].timestamp, 
+         jsonData[i].description, 
+         date.toString(),
+         jsonData[i].os, 
+         jsonData[i].build, 
+         jsonData[i].driver, 
+         ""+jsonData[i].rowsize, 
+         datasize, 
+         jsonData[i].numtables, 
+         jsonData[i].numregions, 
+         jsonData[i].numnodes, 
+         jsonData[i].numclients, 
+         jsonData[i].network, 
+         jsonData[i].totalcpus, 
+         Math.floor(jsonData[i].totalmemory/1024), 
+         Math.floor(jsonData[i].totalspace/1024), 
+         jsonData[i].disktype,
+         jsonData[i].numdisks, 
+         jsonData[i].nummfs
+        ]);
       }
 
-      table = new google.visualization.Table(document.getElementById('runinfo_table_div'));
-      table.draw(tabledata, {showRowNumber: true, width: '100%'});
-
-      google.visualization.events.addListener(table, 'select', selectHandler);
+      var cssClasses = {'headerCell': 'googleHeaderCell', 'oddTableRow': 'grey-background', 'selectedTableRow' : 'italic-font blue-text'};
+      if(tpchart == null) {
+        table = new google.visualization.Table(document.getElementById('runinfo_table_div'));
+        google.visualization.events.addListener(table, 'select', selectHandler);
+      }
+      table.draw(tabledata, {'showRowNumber': true, 'width': '100%', 'alternatingRowStyle': true, 'cssClassNames': cssClasses});
     }
 
     function drawThroughputChart() {
@@ -132,7 +249,7 @@
          var cols = [];
          var rundata=jsonData[i].data;
          if (jsonData[i].description != null) {
-            cols[0]=jsonData[i].description+" - " + jsonData[i].build;
+            cols[0]=jsonData[i].description+" - " + jsonData[i].disktype + " - " + jsonData[i].build;
           }else{
             cols[0]=""+jsonData[i].timestamp;
           }
@@ -150,8 +267,8 @@
 
       var options = {
         title : 'Throughput',
-        vAxis: {title: 'Ops/Sec/Client'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'ops/sec/client'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -194,8 +311,8 @@
 
       var options = {
         title : 'Read Average Latency',
-        vAxis: {title: 'μs'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (μs)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -237,8 +354,8 @@
 
       var options = {
         title : 'Read Min Latency',
-        vAxis: {title: 'μs'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (μs)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -280,8 +397,8 @@
 
       var options = {
         title : 'Read Max Latency',
-        vAxis: {title: 'μs'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (μs)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -323,8 +440,8 @@
 
       var options = {
         title : 'Read 95%ile Latency',
-        vAxis: {title: 'ms'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (ms)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -366,8 +483,8 @@
 
       var options = {
         title : 'Read 99%ile Latency',
-        vAxis: {title: 'ms'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (ms)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -409,8 +526,8 @@
 
       var options = {
         title : 'Write Average Latency',
-        vAxis: {title: 'μs'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (μs)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -452,8 +569,8 @@
 
       var options = {
         title : 'Write Min Latency',
-        vAxis: {title: 'μs'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (μs)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -495,8 +612,8 @@
 
       var options = {
         title : 'Write Max Latency',
-        vAxis: {title: 'μs'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (μs)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -538,8 +655,8 @@
 
       var options = {
         title : 'Write 95%ile Latency',
-        vAxis: {title: 'ms'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (ms)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -581,8 +698,8 @@
 
       var options = {
         title : 'Write 99%ile Latency',
-        vAxis: {title: 'ms'},
-        hAxis: {title: 'Run'},
+        vAxis: {title: 'time (ms)'},
+        //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
 
@@ -595,9 +712,23 @@
     </script>
   </head>
 
-  <body>
+  <body onload="onLoadParams();">
+  <a href="http://10.10.88.136/puffd/graph.html" onclick="clearParams()"><i class="material-icons">home</i></a>
+ 
     <!--Div that will hold the pie chart-->
-    <div id="runinfo_table_div"></div>
+    <div align="right"> Display :
+      <select id="tablelimit" onChange="changeTableList();">
+        <option selected="selected" value="0"></option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="all">all</option>
+      </select> rows
+    </div>
+    <br>
+     <div id="runinfo_table_div"></div>
+     <div align="right"> select row(s) to render </div>
 
     <br>
     <br>

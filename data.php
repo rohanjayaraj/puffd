@@ -27,14 +27,14 @@
 
 	mysql_select_db("perfdb", $con); 
 
-	$statement = "SELECT b.runid,b.timestamp,b.os,b.build,b.driver,b.totalcpus,b.totalmemory,b.totalspace,b.numclients,b.numnodes,b.numtables,b.numregions, b.datasize, b.rowsize, b.network, b.description, a.wrkldid, a.wrkldtype, a.threads, a.throughput, a.wavg, a.wmin, a.wmax, a.wp95, a.wp99, a.ravg, a.rmin, a.rmax, a.rp95, a.rp99 FROM tblycsbstats a, tblycsbrun b where a.runid=b.runid ";
+	$statement = "SELECT b.runid,b.timestamp,b.os,b.build,b.driver,b.totalcpus,b.totalmemory,b.disktype,b.totalspace,b.numclients,b.numnodes,b.numtables,b.numregions, b.datasize, b.rowsize, b.network, b.description, a.wrkldid, a.wrkldtype, a.threads, a.throughput, a.wavg, a.wmin, a.wmax, a.wp95, a.wp99, a.ravg, a.rmin, a.rmax, a.rp95, a.rp99 FROM tblycsbstats a, tblycsbrun b where a.runid=b.runid ";
 
 	if (! empty($runid)) {
-		$statement=$statement." AND runid in (".$runid.") ORDER BY runid DESC";
+		$statement=$statement." AND b.runid in (".$runid.") ORDER BY runid DESC";
 	}
 	else if (! empty($timestamp)) 
 	{
-		$statement=$statement." AND timestamp in (".$timestamp.") ORDER BY runid DESC";
+		$statement=$statement." AND b.timestamp in (".$timestamp.") ORDER BY runid DESC";
 	}
 	else {
 		$statement=$statement." ORDER BY runid DESC LIMIT 6";
@@ -67,6 +67,7 @@
 			$data=$data."\"driver\":\"".$row['driver']."\",";
 			$data=$data."\"totalcpus\":".$row['totalcpus'].",";
 			$data=$data."\"totalmemory\":".$row['totalmemory'].",";
+			$data=$data."\"disktype\":\"".$row['disktype']."\",";
 			$data=$data."\"totalspace\":".$row['totalspace'].",";
 			$data=$data."\"numclients\":".$row['numclients'].",";
 			$data=$data."\"numnodes\":".$row['numnodes'].",";

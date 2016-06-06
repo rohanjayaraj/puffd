@@ -85,6 +85,9 @@ function validInfoField($field){
         case "driver":
         case "totalcpus":
         case "totalmemory":
+        case "disktype":
+        case "numdisks":
+        case "nummfs":
         case "totalspace":
         case "numclients":
         case "numnodes":
