@@ -91,6 +91,7 @@ function validInfoField($field){
         case "totalspace":
         case "numclients":
         case "numnodes":
+        case "tabletype":
         case "numtables":
         case "numregions":
 

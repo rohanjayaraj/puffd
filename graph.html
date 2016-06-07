@@ -194,6 +194,7 @@
       tabledata.addColumn('string', 'Driver Node');
       tabledata.addColumn('string', 'Row Size');
       tabledata.addColumn('number', 'Data Size (GB)');
+      tabledata.addColumn('string', 'Table Type');
       tabledata.addColumn('number', '# of Tables');
       tabledata.addColumn('number', '# of Regions');
       tabledata.addColumn('number', '# of Nodes');
@@ -217,6 +218,7 @@
          jsonData[i].driver, 
          ""+jsonData[i].rowsize, 
          datasize, 
+         jsonData[i].tabletype, 
          jsonData[i].numtables, 
          jsonData[i].numregions, 
          jsonData[i].numnodes, 
@@ -269,7 +271,8 @@
         title : 'Throughput',
         vAxis: {title: 'ops/sec/client'},
         //hAxis: {title: 'Run'},
-        seriesType: 'bars'
+        seriesType: 'bars',
+        chartArea: {  width: "50%", height: "70%" }
       };
 
       if(tpchart == null) {

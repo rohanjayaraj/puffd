@@ -34,7 +34,7 @@
 	}
 	else if (! empty($timestamp)) 
 	{
-		$statement=$statement." AND b.timestamp in (".$timestamp.") ORDER BY runid DESC";
+		$statement=$statement." AND b.timestamp in (".$timestamp.") ORDER BY timestamp";
 	}
 	else {
 		$statement=$statement." ORDER BY runid DESC LIMIT 6";
