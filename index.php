@@ -178,6 +178,7 @@ function validDataField($field, $value){
         case "wrkldid":
         case "wrkldtype":
         case "threads":
+        case "id":
         
         case "throughput":
         case "wavg":

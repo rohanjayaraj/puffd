@@ -28,7 +28,7 @@
 
 	$statement = "SELECT b.timestamp, a.wrkldid, a.wrkldtype, a.threads, a.throughput, a.wavg, a.wmin, a.wmax, a.wp95, a.wp99, a.ravg, a.rmin, a.rmax, a.rp95, a.rp99 FROM tblycsbstats a, tblycsbrun b where a.runid=b.runid ";
 
-	$statement=$statement." AND b.timestamp in (".$runid.") ORDER BY b.runid ASC";
+	$statement=$statement." AND b.timestamp in (".$runid.") ORDER BY b.runid,a.id ASC";
 
 
 	#print("Statement : ".$statement);

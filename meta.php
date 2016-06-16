@@ -6,6 +6,7 @@
     $build="";
     $os="";
     $driver="";
+    $desc="";
     $rows="";
 
     foreach ($_GET as $key => $value) {
@@ -35,6 +36,8 @@
    		 	foreach ($runarr as $val){
    		 		$driver=(empty($driver)) ? "'".$val."'" : $driver.",'".$val."'";
    		 	}
+   		 }else if (strcasecmp($key,"description") == 0) {
+   		 	$desc=$value;
    		 }else if (strcasecmp($key,"rows") == 0) {
    		 	$rows=$value;
    		 }	 	
@@ -50,7 +53,7 @@
 
 	$statement = "SELECT runid,timestamp,os,build,driver,totalcpus,totalmemory,disktype,numdisks,nummfs,totalspace,numclients,numnodes,tabletype,numtables,numregions,datasize,rowsize,network,description FROM tblycsbrun";
 
-	if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($driver) || ! empty($runid) || ! empty($timestamp)) {
+	if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($driver) || ! empty($runid) || ! empty($timestamp) || ! empty($desc)) {
 		$statement=$statement." WHERE ";
 	}
 
@@ -77,6 +80,12 @@
 	if (! empty($driver) ){
 		$statement=($appendAND)?$statement." AND ":$statement;
 		$statement=$statement." driver in (".$driver.") ";
+		$appendAND=TRUE;
+	}
+
+	if (! empty($desc) ){
+		$statement=($appendAND)?$statement." AND ":$statement;
+		$statement=$statement." description like '%".$desc."%' ";
 		$appendAND=TRUE;
 	}
 

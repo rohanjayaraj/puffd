@@ -22,23 +22,37 @@
     color: #3498DB;
   }
 
+  .orange-text {
+    color: #E67E22;
+  }
+
+  .red-text {
+    color: #E74C3C;
+  }
+
 </style>
     <!--Load the AJAX API-->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript">
     
+    var ycsbData=null;
+    var render=true;
+    var hasread=false;
     var urlts = getUrlVars()["runid"];
     var pbuild = getUrlVars()["build"];
     var pos = getUrlVars()["os"];
     var pdriver = getUrlVars()["driver"];
-    var url = "http://10.10.88.136/puffd/data.php";
-    url=urlts==null?url:url+"?timestamp="+urlts;
-    var ycsbData = $.ajax({
-          url: url,
-          dataType: "json",
-          async: false
-          }).responseText;
+    var pdesc = getUrlVars()["description"];
+
+    var url=urlts==null?null:"http://10.10.88.136/puffd/data.php?timestamp="+urlts;
+    if(url != null){
+      ycsbData = $.ajax({
+            url: url,
+            dataType: "json",
+            async: false
+            }).responseText;
+    }
 
     var tabledata;
     var tablerows = 10;
@@ -89,20 +103,29 @@
         pbuild = null;
         pos = null;
         pdriver = null;
+        pdesc = null;
      }
 
      function init(){
       
       // Draw Throughput 
       drawThroughputChart();
-      // Draw Read Avg 
-      drawReadAvgChart();
-      // Draw Min Avg 
-      drawReadMinChart();
-      // Draw Read Max laten
-      drawReadMaxChart();
-      drawReadp95Chart();
-      drawReadp99Chart();
+      if(!render || ycsbData==null){
+        return;
+      }
+      if(hasread){
+        showReadCharts();
+        // Draw Read Avg 
+        drawReadAvgChart();
+        // Draw Min Avg 
+        drawReadMinChart();
+        // Draw Read Max laten
+        drawReadMaxChart();
+        drawReadp95Chart();
+        drawReadp99Chart();
+      }else{
+        hideReadCharts();
+      }
 
       // Draw write charts
       drawWriteAvgChart();
@@ -110,6 +133,24 @@
       drawWriteMaxChart();
       drawWritep95Chart();
       drawWritep99Chart();
+     }
+
+     function hideReadCharts(){
+        document.getElementById('ravg_div').style.display = "none";
+        document.getElementById('rmax_div').style.display = "none";
+        document.getElementById('rmin_div').style.display = "none";
+        document.getElementById('rp95_div').style.display = "none";
+        document.getElementById('rp99_div').style.display = "none";
+
+        
+      }
+
+     function showReadCharts(){
+        document.getElementById('ravg_div').style.display = "block";
+        document.getElementById('rmax_div').style.display = "block";
+        document.getElementById('rmin_div').style.display = "block";
+        document.getElementById('rp95_div').style.display = "block";
+        document.getElementById('rp99_div').style.display = "block";
      }
 
      function changeTableList(){
@@ -148,14 +189,14 @@
           }
           window.history.replaceState("object or string", "Title", newurl);
       }
-     
+      //alert(message);
       init();
     }
 
     function drawRunInfoTable() {
       var lurl = "http://10.10.88.136/puffd/meta.php";
       var param=false;
-      if(pbuild != null || pos != null || pdriver != null || urlts != null)
+      if(pbuild != null || pos != null || pdriver != null || urlts != null || pdesc != null)
       {
         if(pbuild != null){
             lurl+="?build="+pbuild;
@@ -171,7 +212,10 @@
         }
         if(urlts != null){
             lurl+=(param?"&timestamp=":"?timestamp=")+urlts;
-        } 
+        }
+        if(pdesc != null){
+            lurl+=(param?"&description=":"?description=")+pdesc;
+        }  
         tablerows=0;
         onLoadParams();
       }else if(tablerows != 0){
@@ -246,6 +290,9 @@
       var data = new google.visualization.DataTable();
       data.addColumn('string','RunID');
       var colheaders = [];
+      var coltype = [];
+      hasread = false;
+      var alldata = new Array(jsonData.length);
       for ( var i = 0; i < jsonData.length; i++) {
          //console.log(jsonData[i]);
          var cols = [];
@@ -255,9 +302,26 @@
           }else{
             cols[0]=""+jsonData[i].timestamp;
           }
+          alldata[i] = new Array(rundata.length+1);
+          alldata[i][0] = cols[0];
           for ( var j = 0; j < rundata.length; j++) {
-             colheaders[j]=rundata[j].wrkldid;
-             cols[j+1]=rundata[j].throughput;
+            if(i==0){
+               colheaders[j]=rundata[j].wrkldid;
+               coltype[j]=rundata[j].wrkldtype;
+               if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN"){
+                  hasread=true;
+               }
+            }else if(colheaders.length != rundata.length){
+                alert("Different # of workloads in the selected runs. Select similar workload runs");
+                render=false;
+                return
+            }else if(colheaders[j] != rundata[j].wrkldid && rundata[j].wrkldtype != coltype[j]){
+                alert("Different workloads in the selected runs. Select similar workload runs");
+                render=false;
+                return
+            }
+            cols[j+1]=rundata[j].throughput;
+            alldata[i][j+1]=rundata[j].throughput;
            }
            if(i==0){
              for(var k=0; k < colheaders.length; k++){
@@ -265,6 +329,19 @@
              }
            }
            data.addRow(cols);
+      }
+
+      if(jsonData.length == 2){
+        for(var i = 1; i < alldata.length; i++) {
+          var cols = [];
+          var rowdata = alldata[i];
+          cols[0]="Diff";
+          for(var j = 1; j < rowdata.length; j++) {
+              cols[j]=rowdata[j]-alldata[0][j];
+          }
+          //alert(cols);
+          data.addRow(cols);
+        }
       }
 
       var options = {
@@ -280,12 +357,12 @@
         //console.log("yeahhhhh");
       }
       tpchart.draw(data, options);
+      render=true;
     }
 
     function drawReadAvgChart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
-      data.addColumn('string','RunID');
       var colheaders = [];
       for ( var i = 0; i < jsonData.length; i++) {
          var cols = [];
@@ -305,6 +382,7 @@
              idx++;
            }
            if(i==0){
+             data.addColumn('string','RunID');
              for(var k=0; k < colheaders.length; k++){
                data.addColumn('number', colheaders[k]);
              }
@@ -731,7 +809,7 @@
     </div>
     <br>
      <div id="runinfo_table_div"></div>
-     <div align="right"> select row(s) to render </div>
+     <div align="left"> select row(s) to render </div>
 
     <br>
     <br>
@@ -739,51 +817,51 @@
    
     <!--div id="table_div"></div-->
     <style>
-        table.equalDevide tr td { width:50%;}
+        table.equalDivide tr td { width:50%;}
     </style>
 
 
-    <table class="equalDevide" cellpadding="0" cellspacing="0" width="100%" border="0">
+    <table id="table" class="equalDivide" cellpadding="0" cellspacing="0" width="100%" border="0">
     <tr>
         <div id="tp_div" style="height: 400px;"></div>
     </tr>
     <tr>
-        <td>
+        <td id="td_ravg">
           <div id="ravg_div" style="height: 400px;"></div>
         </td>
-        <td>
+        <td id="td_wavg">
            <div id="wavg_div" style="height: 400px;"></div>
         </td>
     </tr>
     <tr>
-        <td>
+        <td id="td_rmax">
           <div id="rmax_div" style="height: 400px;"></div>
         </td>
-         <td>
+         <td id="td_wmax">
           <div id="wmax_div" style="height: 400px;"></div>
         </td>
     </tr>
     <tr>
-        <td>
+        <td id="td_rmin">
           <div id="rmin_div" style="height: 400px;"></div>
         </td>
-        <td>
+        <td id="td_wmin">
           <div id="wmin_div" style="height: 400px;"></div>
         </td>
      </tr>
       <tr>
-         <td>
+         <td id="td_rp95">
          <div id="rp95_div" style="height: 400px;"></div>
         </td>
-         <td>
+         <td id="td_wp95">
          <div id="wp95_div" style="height: 400px;"></div>
         </td>
     </tr>
     <tr>
-         <td>
+         <td id="td_rp99">
           <div id="rp99_div" style="height: 400px;"></div>
         </td>
-        <td>
+        <td id="td_wp99">
           <div id="wp99_div" style="height: 400px;"></div>
         </td>
     </tr>
