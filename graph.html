@@ -308,7 +308,7 @@
             if(i==0){
                colheaders[j]=rundata[j].wrkldid;
                coltype[j]=rundata[j].wrkldtype;
-               if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN"){
+               if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN" || rundata[j].wrkldtype == "MIXED"){
                   hasread=true;
                }
             }else if(colheaders.length != rundata.length){
