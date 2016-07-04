@@ -22,20 +22,11 @@
    		 		$timestamp=(empty($timestamp)) ? "'".$val."'" : $timestamp.",'".$val."'";
    		 	}
    		 }else if (strcasecmp($key,"build") == 0) {
-   		 	$runarr = explode(',', $value);
-   		 	foreach ($runarr as $val){
-   		 		$build=(empty($build)) ? "'".$val."'" : $build.",'".$val."'";
-   		 	}
+   		 	$build=$value;
    		 }else if (strcasecmp($key,"os") == 0) {
-   		 	$runarr = explode(',', $value);
-   		 	foreach ($runarr as $val){
-   		 		$os=(empty($os)) ? "'".$val."'" : $os.",'".$val."'";
-   		 	}
+   		 	$os=$value;
    		 }else if (strcasecmp($key,"driver") == 0) {
-   		 	$runarr = explode(',', $value);
-   		 	foreach ($runarr as $val){
-   		 		$driver=(empty($driver)) ? "'".$val."'" : $driver.",'".$val."'";
-   		 	}
+   		 	$driver=$value;
    		 }else if (strcasecmp($key,"description") == 0) {
    		 	$desc=$value;
    		 }else if (strcasecmp($key,"rows") == 0) {
@@ -69,17 +60,17 @@
 	}
 	if (! empty($build) ){
 		$statement=($appendAND)?$statement." AND ":$statement;
-		$statement=$statement." build in (".$build.") ";
+		$statement=$statement." build like '%".$build."%' ";
 		$appendAND=TRUE;
 	}
 	if (! empty($os)){
 		$statement=($appendAND)?$statement." AND ":$statement;
-		$statement=$statement." os in (".$os.") ";
+		$statement=$statement." os like '%".$os."%' ";
 		$appendAND=TRUE;
 	}
 	if (! empty($driver) ){
 		$statement=($appendAND)?$statement." AND ":$statement;
-		$statement=$statement." driver in (".$driver.") ";
+		$statement=$statement." driver like '%".$driver."%' ";
 		$appendAND=TRUE;
 	}
 

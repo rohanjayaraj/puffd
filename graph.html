@@ -30,6 +30,38 @@
     color: #E74C3C;
   }
 
+  .search-bar {
+    height: 10px;
+    background-color: #e1e1e1;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    position:relative;
+    width:150px
+  }
+
+.search-bar .searchbutton {
+    position:absolute;
+    top:0%;
+    right:0px;
+    height:20px;
+  }
+
+.sfield {
+    float: left;
+    margin: 0px 0 0 8px;
+    font: 8pt Arial;
+    font-weight: bold;
+    border-radius: 10px 10px 10px 10px;
+    color: #000000;
+    height: 18px;
+    line-height: 0px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    max-width: 150px
+  }
+
 </style>
     <!--Load the AJAX API-->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -108,9 +140,12 @@
 
      function init(){
       
+      if(ycsbData==null){
+        return;
+      }
       // Draw Throughput 
       drawThroughputChart();
-      if(!render || ycsbData==null){
+      if(!render){
         return;
       }
       if(hasread){
@@ -159,6 +194,15 @@
          drawRunInfoTable();
      }
 
+     function filterSearch(){
+         pbuild = document.getElementById('buildSearch').value;
+         pos = document.getElementById('osSearch').value;
+         pdriver = document.getElementById('driverSearch').value;
+         pdesc = document.getElementById('descSearch').value;
+         urlts=null;
+         drawRunInfoTable();
+     }
+
      function selectHandler(e) {
       var selection = table.getSelection();
       var message = '';
@@ -196,7 +240,7 @@
     function drawRunInfoTable() {
       var lurl = "http://10.10.88.136/puffd/meta.php";
       var param=false;
-      if(pbuild != null || pos != null || pdriver != null || urlts != null || pdesc != null)
+      if(pbuild || pos || pdriver || urlts || pdesc)
       {
         if(pbuild != null){
             lurl+="?build="+pbuild;
@@ -216,17 +260,17 @@
         if(pdesc != null){
             lurl+=(param?"&description=":"?description=")+pdesc;
         }  
-        tablerows=0;
+        lurl+="&rows="+tablerows;
         onLoadParams();
-      }else if(tablerows != 0){
-           lurl+="?rows="+tablerows
-      } 
+      }else{
+        lurl+="?rows="+tablerows
+      }
       var ycsbMetadata = $.ajax({
           url: lurl,
           dataType: "json",
           async: false
           }).responseText;
-      //alert('Metadata ' + ycsbMetadata);
+      //alert('Metadata ' + lurl);
       var jsonData = JSON.parse(ycsbMetadata);
       tabledata = new google.visualization.DataTable();
 
@@ -293,6 +337,7 @@
       var coltype = [];
       hasread = false;
       var alldata = new Array(jsonData.length);
+      var perserver = false;
       for ( var i = 0; i < jsonData.length; i++) {
          //console.log(jsonData[i]);
          var cols = [];
@@ -320,8 +365,16 @@
                 render=false;
                 return
             }
-            cols[j+1]=rundata[j].throughput;
-            alldata[i][j+1]=rundata[j].throughput;
+            var numnodes=jsonData[i].numnodes;
+            var numclients=jsonData[i].numclients;
+            var totaltpt=rundata[j].throughput*numclients;
+             
+            if(numnodes < numclients){
+              perserver = true;
+            }
+            var tpt=Math.round(totaltpt/numnodes);
+            cols[j+1]=tpt;
+            alldata[i][j+1]=tpt;
            }
            if(i==0){
              for(var k=0; k < colheaders.length; k++){
@@ -345,8 +398,16 @@
       }
 
       var options = {
-        title : 'Throughput',
+        title : 'Throughput (Client)',
         vAxis: {title: 'ops/sec/client'},
+        //hAxis: {title: 'Run'},
+        seriesType: 'bars',
+        chartArea: {  width: "50%", height: "70%" }
+      };
+
+      var options2 = {
+        title : 'Throughput (Server)',
+        vAxis: {title: 'ops/sec/server'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars',
         chartArea: {  width: "50%", height: "70%" }
@@ -356,7 +417,12 @@
         tpchart = new google.visualization.ComboChart(document.getElementById('tp_div'));
         //console.log("yeahhhhh");
       }
-      tpchart.draw(data, options);
+      if(perserver){
+        tpchart.draw(data, options2);
+      }else{
+        tpchart.draw(data, options);
+      }
+
       render=true;
     }
 
@@ -796,17 +862,56 @@
   <body onload="onLoadParams();">
   <a href="http://10.10.88.136/puffd/graph.html" onclick="clearParams()"><i class="material-icons">home</i></a>
  
-    <!--Div that will hold the pie chart-->
-    <div align="right"> Display :
-      <select id="tablelimit" onChange="changeTableList();">
-        <option selected="selected" value="0"></option>
-        <option value="5">5</option>
-        <option value="10">10</option>
-        <option value="25">25</option>
-        <option value="50">50</option>
-        <option value="all">all</option>
-      </select> rows
+    
+   
+    <!--div id="table_div"></div-->
+    <style>
+        table.equalDivide tr td { width:50%;}
+    </style>
+
+    <div  align="right">
+      <table id="table2" cellpadding="0" cellspacing="8" width="50%" border="0">
+        <tr>
+          <td class="search-bar" >
+              <input type="text" class="sfield" id="descSearch" placeholder="Description..." onkeydown = "if (event.keyCode == 13) document.getElementById('goSearch').click()"/>
+              <input type="image" class="searchbutton" src="http://www.spheretekk.com/bc/images/search-icon.gif" alt="Search" onclick = "filterSearch();"/>
+           </td>
+          
+          <td class="search-bar" >
+            <input type="text" class="sfield" id="osSearch" placeholder="OS..." onkeydown = "if (event.keyCode == 13) document.getElementById('goSearch').click()"/>
+            <input type="image" class="searchbutton" src="http://www.spheretekk.com/bc/images/search-icon.gif" alt="Search" onclick = "filterSearch();"/>
+          </td>
+          
+          <td class="search-bar" >
+            <input type="text" class="sfield" id="buildSearch" placeholder="Build..." onkeydown = "if (event.keyCode == 13) document.getElementById('goSearch').click()"/>
+            <input type="image" class="searchbutton" src="http://www.spheretekk.com/bc/images/search-icon.gif" alt="Search" onclick = "filterSearch();"/>
+            
+          </td>
+
+          <td class="search-bar" >
+            <input type="text" class="sfield" id="driverSearch" placeholder="Driver..." onkeydown = "if (event.keyCode == 13) document.getElementById('goSearch').click()"/>
+            <input type="image" class="searchbutton" src="http://www.spheretekk.com/bc/images/search-icon.gif" alt="Search" onclick = "filterSearch();"/>
+          </td>
+
+          <td>
+            <input type = "button" id = "goSearch" hidden="true" onclick = "filterSearch();"/>
+          </td>
+
+          <td align="right">
+            Display :
+          <select id="tablelimit" onChange="changeTableList();">
+            <option selected="selected" value="0"></option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="all">all</option>
+          </select> rows
+        </td>
+        </tr>
+       </table>
     </div>
+   
     <br>
      <div id="runinfo_table_div"></div>
      <div align="left"> select row(s) to render </div>
@@ -814,12 +919,6 @@
     <br>
     <br>
     <br>
-   
-    <!--div id="table_div"></div-->
-    <style>
-        table.equalDivide tr td { width:50%;}
-    </style>
-
 
     <table id="table" class="equalDivide" cellpadding="0" cellspacing="0" width="100%" border="0">
     <tr>
