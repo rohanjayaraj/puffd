@@ -1,6 +1,8 @@
 <html>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <head>
+  <link rel="shortcut icon" type="image/x-icon" href="graph.ico" />
+  <title>YCSB Graphs</title>
   <style type='text/css'>
   .bold-font {
     font-weight: bold;
@@ -71,6 +73,7 @@
     var ycsbData=null;
     var render=true;
     var hasread=false;
+    var haswrite=false;
     var urlts = getUrlVars()["runid"];
     var pbuild = getUrlVars()["build"];
     var pos = getUrlVars()["os"];
@@ -162,12 +165,18 @@
         hideReadCharts();
       }
 
-      // Draw write charts
-      drawWriteAvgChart();
-      drawWriteMinChart();
-      drawWriteMaxChart();
-      drawWritep95Chart();
-      drawWritep99Chart();
+      if(haswrite){
+         showWriteCharts();
+        // Draw write charts
+        drawWriteAvgChart();
+        drawWriteMinChart();
+        drawWriteMaxChart();
+        drawWritep95Chart();
+        drawWritep99Chart();
+      }else{
+        hideWriteCharts();
+      }
+
      }
 
      function hideReadCharts(){
@@ -180,12 +189,30 @@
         
       }
 
+      function hideWriteCharts(){
+        document.getElementById('wavg_div').style.display = "none";
+        document.getElementById('wmax_div').style.display = "none";
+        document.getElementById('wmin_div').style.display = "none";
+        document.getElementById('wp95_div').style.display = "none";
+        document.getElementById('wp99_div').style.display = "none";
+
+        
+      }
+
      function showReadCharts(){
         document.getElementById('ravg_div').style.display = "block";
         document.getElementById('rmax_div').style.display = "block";
         document.getElementById('rmin_div').style.display = "block";
         document.getElementById('rp95_div').style.display = "block";
         document.getElementById('rp99_div').style.display = "block";
+     }
+
+     function showWriteCharts(){
+        document.getElementById('wavg_div').style.display = "block";
+        document.getElementById('wmax_div').style.display = "block";
+        document.getElementById('wmin_div').style.display = "block";
+        document.getElementById('wp95_div').style.display = "block";
+        document.getElementById('wp99_div').style.display = "block";
      }
 
      function changeTableList(){
@@ -336,6 +363,7 @@
       var colheaders = [];
       var coltype = [];
       hasread = false;
+      haswrite = false;
       var alldata = new Array(jsonData.length);
       var perserver = false;
       for ( var i = 0; i < jsonData.length; i++) {
@@ -353,8 +381,13 @@
             if(i==0){
                colheaders[j]=rundata[j].wrkldid;
                coltype[j]=rundata[j].wrkldtype;
-               if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN" || rundata[j].wrkldtype == "MIXED"){
+               if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN"){
                   hasread=true;
+               }else if (rundata[j].wrkldtype == "LOAD" || rundata[j].wrkldtype == "DELETE"){
+                  haswrite=true;
+               }else if (rundata[j].wrkldtype == "MIXED"){
+                   hasread=true;
+                   haswrite=true;
                }
             }else if(colheaders.length != rundata.length){
                 alert("Different # of workloads in the selected runs. Select similar workload runs");
