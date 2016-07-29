@@ -40,7 +40,20 @@ CREATE TABLE tblycsbstats (
          rmax INT DEFAULT NULL,
          rp95 TINYINT DEFAULT NULL,
          rp99 TINYINT DEFAULT NULL,
+         INT INT,
          FOREIGN KEY (runid) REFERENCES tblycsbrun(runid)
      );
 
 CREATE INDEX tblycsbstats_runid ON tblycsbstats (runid);
+
+DROP TABLE tblycsbrunlog;
+CREATE TABLE tblycsbrunlog (
+         runid INT,
+         wrkldid VARCHAR(50) NOT NULL,
+         wrkldtype ENUM('LOAD', 'READ', 'SCAN', 'MIXED', 'DELETE'),
+         id INT,
+         log LONGTEXT,
+         FOREIGN KEY (runid) REFERENCES tblycsbrun(runid)
+     );
+
+CREATE INDEX tblycsbrunlog_runid ON tblycsbrunlog (runid);

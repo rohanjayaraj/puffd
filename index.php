@@ -23,6 +23,13 @@ Flight::route('POST /', function(){
                     $retval = handleRunInfo($runinfo);
                     #print("\nYCSB RUNID => ".$retval);
                 }
+            }else if (! empty($data['runlog'])){
+                #var_dump($_POST);
+                $runlog = json_decode($data['runlog']);
+                if (! empty($runlog)){
+                    $retval = handleRunLog($runlog);
+                    #print("\nYCSB RUNID => ".$retval);
+                }
             }else{
                 return;
             }
@@ -200,6 +207,87 @@ function validDataField($field, $value){
     return $retval;
 }
 
+function handleRunLog($json)
+{
+    try {
+        $fields=NULL;
+        $values=NULL;
+        $timestamp=NULL;
+        $wrkldid=NULL;
+
+        #echo 'Running handleRunLog ::';
+        
+        foreach($json as $key => $value) 
+        {
+            #print("\n".$key." =>".$value."\n");
+
+            # Check if field is valid else return false
+            if(!validRunLogField($key, $value)){
+                return -1;
+            }
+
+            if($key == "wrkldid"){
+                $wrkldid=$value;
+            }
+
+            # Save timestamp value and continue as it needs to be translated to runid
+            if($key == "timestamp"){
+                $timestamp=$value;
+                continue;
+            }else if($key == "log"){
+                $value=mysql_real_escape_string($value);
+            }
+
+            if(is_null($fields)){
+                $fields=$key;
+                $values="\"".$value."\"";
+            } else {
+                $fields=$fields.",".$key;
+                $values=$values.",\"".$value."\"";
+           }
+
+        }
+
+        $runid=getRunIDForTimestamp($timestamp);
+        if($runid == 0)
+        {
+            return -3;
+        } 
+        else
+        {
+            $fields=$fields.",runid";
+            $values=$values.",\"".$runid."\"";
+        }
+
+        # Check if runlog id already present, if yes, return 
+        if (runlogExists($runid, $wrkldid))
+        {
+            return -5;
+        }
+        insertRecord("tblycsbrunlog", $fields, $values);
+        return 0;
+    } catch (Exception $e) {
+        echo '[handleRunLog] Caught exception: ',  $e->getMessage(), "\n";
+        return -4;
+    }   
+}
+
+function validRunLogField($field, $value){
+    $retval=false;
+    switch ($field) {
+        case "timestamp": 
+        case "wrkldid":
+        case "wrkldtype":
+        case "id":
+        case "log":
+            $retval=true;
+            break;
+        default:
+            $retval=false;
+    }
+    return $retval;
+}
+
 function getRunIDForTimestamp($timestamp){
     $tsrunid=0;
     if($timestamp == NULL){
@@ -220,6 +308,21 @@ function getRunIDForTimestamp($timestamp){
         echo '[getRunIDForTimestamp] Caught exception: ',  $e->getMessage(), "\n";
     } 
     return $tsrunid;
+}
+
+function runlogExists($runid, $wrkldid){
+     try {
+        $statement="select wrkldid from tblycsbrunlog where runid=".$runid." and wrkldid='".$wrkldid."'";
+        $db = new PDO('mysql:host=localhost;dbname=perfdb', 'root', '');
+        $stmt = $db->query($statement);
+        $data=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach($data as $row) {
+           return 1;
+        }
+    } catch (Exception $e) {
+        echo '[runlogExists] Caught exception: ',  $e->getMessage(), "\n";
+    }
+    return 0;
 }
 
 function workloadExists($runid, $wrkldid){
