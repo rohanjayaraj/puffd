@@ -30,6 +30,43 @@ Flight::route('POST /', function(){
                     $retval = handleRunLog($runlog);
                     #print("\nYCSB RUNID => ".$retval);
                 }
+            }else if (! empty($data['dfsio'])){
+                #var_dump($_POST);
+                $dfsio = json_decode($data['dfsio']);
+                if (! empty($dfsio)){
+                    $retval = handleDFSIO($dfsio);
+                    print("\nDFSIO RUNID => ".$retval);
+                }else{
+                    print("Empty JSON for DFSIO -> ".$data['dfsio']);
+                }
+            }else if (! empty($data['terasort'])){
+                #var_dump($_POST);
+                $terasort = json_decode($data['terasort']);
+                if (! empty($terasort)){
+                    $retval = handleTeraSort($terasort);
+                    #print("\TERASORT RUNID => ".$retval);
+                }
+            }else if (! empty($data['rwspeed'])){
+                #var_dump($_POST);
+                $rwspeed = json_decode($data['rwspeed']);
+                if (! empty($rwspeed)){
+                    $retval = handleRWSpeed($rwspeed);
+                    #print("\nRWSpeed RUNID => ".$retval);
+                }
+            }else if (! empty($data['rubixRunInfo'])){
+                #var_dump($_POST);
+                $rubixinfo = json_decode($data['rubixRunInfo']);
+                if (! empty($var_dump)){
+                    $retval = handleRubixInfo($var_dump);
+                    #print("\nRubixRunInfo RUNID => ".$retval);
+                }
+            }else if (! empty($data['rubixRunData'])){
+                #var_dump($_POST);
+                $rubixdata = json_decode($data['rubixRunData']);
+                if (! empty($rubixdata)){
+                    $retval = handleRubixData($rubixdata);
+                    #print("\nRubixData RUNID => ".$retval);
+                }
             }else{
                 return;
             }
@@ -288,6 +325,396 @@ function validRunLogField($field, $value){
     return $retval;
 }
 
+
+function handleDFSIO($json)
+{
+    try {
+        $fields=NULL;
+        $values=NULL;
+        $timestamp=NULL;
+        
+        echo 'Running handleDFSIO ::';
+        
+        foreach($json as $key => $value) 
+        {
+            print("\n".$key." =>".$value."\n");
+            print($key." =>".$value);
+            if(!validDFSIOField($key))
+            {
+                return -1;
+            }
+            # Check if field is valid else return false
+             # Save timestamp value to validate if the row already exists
+            if($key == "timestamp"){
+                $timestamp=$value;
+            }
+            else if($key == "joblogs"){
+                $value=mysql_real_escape_string($value);
+            } 
+            else if($key == "configuration"){
+                $value=mysql_real_escape_string($value);
+            }
+
+            if(is_null($fields)){
+                $fields=$key;
+                $values="\"".$value."\"";
+            } else {
+                $fields=$fields.",".$key;
+                $values=$values.",\"".$value."\"";
+           }
+        }
+        $runid=getRunIDForTimestamp2($timestamp,"tbldfsio");
+        if($runid != 0)
+        {
+            return $runid;
+        }
+        insertRecord("tbldfsio", $fields, $values);
+        return getRunIDForTimestamp2($timestamp,"tbldfsio");
+    } catch (Exception $e) {
+        echo '[handleDFSIO] Caught exception: ',  $e->getMessage(), "\n";
+        return -4;
+    }   
+}
+
+function validDFSIOField($field){
+    $retval=false;
+    switch ($field) {
+        case "timestamp": 
+        case "os":
+        case "maprbuild":
+        case "driver":
+        case "description":
+        case "disktype":
+        case "hadoopversion":
+        case "joblogs":
+        case "configuration":
+        case "mfsinstances":
+        case "writetp":
+        case "readtp":
+        case "teststatus":
+        case "nodes":
+            $retval=true;
+            break;
+        default:
+            $retval=false;
+    }
+    return $retval;
+}
+
+function handleTeraSort($json)
+{
+    try {
+        $fields=NULL;
+        $values=NULL;
+        $timestamp=NULL;
+        
+        #echo 'Running handleTeraSort ::';
+        
+        foreach($json as $key => $value) 
+        {
+            #print("\n".$key." =>".$value."\n");
+            #print($key." =>".$value);
+            if(!validTeraSortField($key))
+            {
+                return -1;
+            }
+            # Check if field is valid else return false
+             # Save timestamp value to validate if the row already exists
+            if($key == "timestamp"){
+                $timestamp=$value;
+            }
+            else if($key == "joblogs"){
+                $value=mysql_real_escape_string($value);
+            } 
+            else if($key == "configuration"){
+                $value=mysql_real_escape_string($value);
+            }
+
+            if(is_null($fields)){
+                $fields=$key;
+                $values="\"".$value."\"";
+            } else {
+                $fields=$fields.",".$key;
+                $values=$values.",\"".$value."\"";
+           }
+        }
+        $runid=getRunIDForTimestamp2($timestamp,"tblterasort");
+        if($runid != 0)
+        {
+            return $runid;
+        }
+        insertRecord("tblterasort", $fields, $values);
+        return getRunIDForTimestamp2($timestamp,"tblterasort");
+    } catch (Exception $e) {
+        echo '[handleTeraSort] Caught exception: ',  $e->getMessage(), "\n";
+        return -4;
+    }   
+}
+
+function validTeraSortField($field){
+    $retval=false;
+    switch ($field) {
+        case "timestamp": 
+        case "os":
+        case "build":
+        case "driver":
+        case "description":
+        case "disktype":
+        case "hadoopversion":
+        case "joblogs":
+        case "configuration":
+        case "runtime":
+        case "secure":
+        case "encryption":
+        case "teststatus":
+        case "avgmap":
+        case "avgreduce":
+        case "avgshuffle":
+        case "avgmerge":
+        case "status":
+            $retval=true;
+            break;
+        default:
+            $retval=false;
+    }
+    return $retval;
+}
+
+function handleRWSpeed($json)
+{
+    try {
+        $fields=NULL;
+        $values=NULL;
+        $timestamp=NULL;
+        
+        echo 'Running handleRWSpeed ::';
+        
+        foreach($json as $key => $value) 
+        {
+            #print($key." =>".$value);
+            if(!validRWSpeedField($key))
+            {
+                return -1;
+            }
+            # Check if field is valid else return false
+             # Save timestamp value to validate if the row already exists
+            if($key == "timestamp"){
+                $timestamp=$value;
+            }else if($key == "nodes"){
+                $value=mysql_real_escape_string($value);
+            } 
+            print("\n".$key." =>".$value."\n");
+            if(is_null($fields)){
+                $fields=$key;
+                $values="\"".$value."\"";
+            }else{
+                 $fields=$fields.",".$key;
+                if(is_bool($value) === true){
+                    $boolval = json_encode($value);
+                    $values=$values.",\"".$boolval."\"";
+                }else{
+                   $values=$values.",\"".$value."\"";
+               }
+           }
+        }
+        $runid=getRunIDForTimestamp2($timestamp,"tblrwspeed");
+        if($runid != 0)
+        {
+            return $runid;
+        }
+        insertRecord("tblrwspeed", $fields, $values);
+        return getRunIDForTimestamp2($timestamp,"tblrwspeed");
+    } catch (Exception $e) {
+        echo '[handleRWSpeed] Caught exception: ',  $e->getMessage(), "\n";
+        return -4;
+    }   
+}
+
+function validRWSpeedField($field){
+    $retval=false;
+    switch ($field) {
+        case "timestamp": 
+        case "os":
+        case "build":
+        case "driver":
+        case "disktype":
+        case "description":
+        case "hadoopversion":
+        case "mfsinstances":
+        case "networkencryption":
+        case "nodes":
+        case "repl1localread":
+        case "repl1localwrite":
+        case "repl1remoteread":
+        case "repl1remotewrite":
+        case "repl3localread":
+        case "repl3localwrite":
+        case "repl3remoteread":
+        case "repl3remotewrite":
+        case "status":
+        case "secure":
+            $retval=true;
+            break;
+        default:
+            $retval=false;
+    }
+    return $retval;
+}
+
+function handleRubixInfo($json){
+     try {
+        $fields=NULL;
+        $values=NULL;
+        $timestamp=NULL;
+        #echo 'Running handleRubixInfo :: ';
+        foreach($json as $key => $value) 
+        {
+            #print($key." =>".$value);
+            if(!validRubixInfoField($key))
+            {
+                return -1;
+            }
+
+            # Save timestamp value to validate if the row already exists
+            if($key == "timestamp"){
+                $timestamp=$value;
+            }
+
+            if(is_null($fields)){
+                $fields=$key;
+                $values="\"".$value."\"";
+            } else {
+                $fields=$fields.",".$key;
+                $values=$values.",\"".$value."\"";
+           }
+        }
+        $runid=getRunIDForTimestamp2($timestamp,"tblrubixruninfo");
+        if($runid != 0)
+        {
+            return $runid;
+        }
+        insertRecord("tblrubixruninfo", $fields, $values);
+        return getRunIDForTimestamp2($timestamp, "tblrubixruninfo");
+    } catch (Exception $e) {
+        echo '[handleRubixInfo] Caught exception: ',  $e->getMessage(), "\n";
+        return -4;
+    }   
+}
+
+function validRubixInfoField($field){
+    $retval=false;
+    switch ($field) {
+        case "timestamp":
+        case "os":
+        case "buildversion":
+        case "hostname":
+        case "messagesize":
+        case "servercount":
+        case "numdisks":
+        case "nummfs":
+        case "numsp":
+        case "description":
+            $retval=true;
+            break;
+        default:
+            $retval=false;
+    }
+    return $retval;
+}
+
+function handleRubixData($json)
+{
+    try {
+        $fields=NULL;
+        $values=NULL;
+        $timestamp=NULL;
+        $testid=NULL;
+
+        #echo 'Running handleRubixData ::';
+        
+        foreach($json as $key => $value) 
+        {
+            #print("\n".$key." =>".$value."\n");
+
+            # Check if field is valid else return false
+            if(!validRubixDataField($key)){
+                return -1;
+            }
+
+            if($key == "testid"){
+                $testid=$value;
+            }
+
+            # Save timestamp value and continue as it needs to be translated to runid
+            if($key == "timestamp"){
+                $timestamp=$value;
+                continue;
+            }
+
+            if(is_null($fields)){
+                $fields=$key;
+                $values="\"".$value."\"";
+            } else {
+                $fields=$fields.",".$key;
+                $values=$values.",\"".$value."\"";
+           }
+
+        }
+
+        $runid=getRunIDForTimestamp2($timestamp,"tblrubixruninfo");
+        if($runid == 0)
+        {
+            print("\n [handleRubixData] Timestamp ".$timestamp." is added to tblrubixruninfo table yet! \n");
+            return -3;
+        } 
+        else
+        {
+            $fields=$fields.",runid";
+            $values=$values.",\"".$runid."\"";
+        }
+
+        # Check if workload id already exists, if yes, return 
+        if (rubixDataExists($runid, $testid))
+        {
+            return -5;
+        }
+        insertRecord("tblrubixrundata", $fields, $values);
+        return 0;
+    } catch (Exception $e) {
+        echo '[handleRubixData] Caught exception: ',  $e->getMessage(), "\n";
+        return -4;
+    }   
+}
+
+function validRubixDataField($field){
+    $retval=false;
+    switch ($field) {
+        case "testid": 
+        case "testtype":
+        case "replfactor":
+        case "compression":
+        case "numclients":
+        
+        case "throughput":
+        case "initthroughput":
+        case "ratedrop":
+        case "avgtimetofinish":
+        case "stddevduration":
+        case "avglag":
+
+        case "avgofminlag":
+        case "avgofmaxlag":
+        case "absminlag":
+        case "absmaxlag":
+            $retval=true;
+            break;
+        default:
+            print("\n [validRubixDataField] Invalid field ".$field."\n");
+            $retval=false;
+    }
+    return $retval;
+}
+
 function getRunIDForTimestamp($timestamp){
     $tsrunid=0;
     if($timestamp == NULL){
@@ -306,6 +733,28 @@ function getRunIDForTimestamp($timestamp){
         }
     } catch (Exception $e) {
         echo '[getRunIDForTimestamp] Caught exception: ',  $e->getMessage(), "\n";
+    } 
+    return $tsrunid;
+}
+
+function getRunIDForTimestamp2($timestamp,$table){
+    $tsrunid=0;
+    if($timestamp == NULL){
+        return $tsrunid;
+    }
+
+    try {
+        $statement="select runid from ".$table." where timestamp=".$timestamp;
+        $db = new PDO('mysql:host=localhost;dbname=perfdb', 'root', '');
+        $stmt = $db->query($statement);
+        $data=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        $tsrunid="0";
+        foreach($data as $row) {
+           $tsrunid=$row['runid'];
+           break;
+        }
+    } catch (Exception $e) {
+        echo '[getRunIDForTimestamp2] Caught exception: ',  $e->getMessage(), "\n";
     } 
     return $tsrunid;
 }
@@ -340,13 +789,28 @@ function workloadExists($runid, $wrkldid){
     return 0;
 }
 
+function rubixDataExists($runid, $recordid){
+    try {
+        $statement="select testid from tblrubixrundata where runid=".$runid." and testid='".$recordid."'";
+        $db = new PDO('mysql:host=localhost;dbname=perfdb', 'root', '');
+        $stmt = $db->query($statement);
+        $data=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach($data as $row) {
+           return 1;
+        }
+    } catch (Exception $e) {
+        echo '[rubixDataExists] Caught exception: ',  $e->getMessage(), "\n";
+    }
+    return 0;
+}
+
 function insertRecord($table, $fields, $values) {
     try {
         $db = new PDO('mysql:host=localhost;dbname=perfdb', 'root', '');
         $statement="insert into ".$table." (".$fields.") VALUES (".$values.")";
         $stmt = $db->prepare($statement);
         $stmt->execute();
-        #print("\nStatement : ".$statement);
+        print("\nStatement : ".$statement);
     }catch (Exception $e) {
         echo '[insertRecord] Caught exception: ',  $e->getMessage(), "\n";
     } 

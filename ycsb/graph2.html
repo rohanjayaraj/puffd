@@ -64,6 +64,19 @@
     max-width: 150px
   }
 
+.headerstyle{
+  background: #31D3AB;
+  font: 12px Courier;
+  text-align: center;
+  font-weight: bold;  
+}
+
+.mystyle {
+    color: #072832;
+    font: 11px Verdana;
+    text-align: center;                         
+}
+
 .checkboxtext
 {
   /* Checkbox text */
@@ -92,8 +105,8 @@
     var movavg = getUrlVars()["movavg"];
     var exgtavg = getUrlVars()["exludegtavg"];
 
-    var url=urlts==null?null:"http://10.10.88.136/puffd/data.php?timestamp="+urlts;
-    var ycsbRunLogURL=urlts==null?null:"http://10.10.88.136/puffd/datalog.php?timestamp="+urlts;
+    var url=urlts==null?null:"http://10.10.88.136/puffd/ycsb/data.php?timestamp="+urlts;
+    var ycsbRunLogURL=urlts==null?null:"http://10.10.88.136/puffd/ycsb/datalog.php?timestamp="+urlts;
 
     if(url != null){
       ycsbData = $.ajax({
@@ -110,6 +123,7 @@
     }
 
     var table;
+    var statstable;
     var tpchart;
     var ravgchart;
     var rminchart;
@@ -196,6 +210,8 @@
       if(!render){
         return;
       }
+      drawStatsTable();
+
       if(hasread){
         showReadCharts();
         // Draw Read Avg 
@@ -311,9 +327,9 @@
       if (timestamp == null) {
         message = 'nothing';
       }else{
-         ycsbRunLogURL="http://10.10.88.136/puffd/datalog.php?timestamp="+timestamp
+         ycsbRunLogURL="http://10.10.88.136/puffd/ycsb/datalog.php?timestamp="+timestamp
          ycsbData = $.ajax({
-          url: "http://10.10.88.136/puffd/data.php?timestamp="+timestamp,
+          url: "http://10.10.88.136/puffd/ycsb/data.php?timestamp="+timestamp,
           dataType: "json",
           async: false
           }).responseText;
@@ -332,7 +348,7 @@
     }
 
     function drawRunInfoTable() {
-      var lurl = "http://10.10.88.136/puffd/meta.php";
+      var lurl = "http://10.10.88.136/puffd/ycsb/meta.php";
       var param=false;
       if(pbuild || pos || pdriver || urlts || pdesc)
       {
@@ -421,6 +437,80 @@
         google.visualization.events.addListener(table, 'select', selectHandler);
       }
       table.draw(tabledata, {'showRowNumber': true, 'width': '100%', 'alternatingRowStyle': true, 'cssClassNames': cssClasses});
+    }
+
+    function drawStatsTable(){
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+      data.addColumn('string','RunID');
+      data.addColumn('string','Workload');
+      data.addColumn('string','Type');
+      data.addColumn('number','Threads');
+
+      data.addColumn('number','Throughput (ops/sec/client)');
+      data.addColumn('number','Write Avg Latency (μs)');
+      data.addColumn('number','Write Min Latency (μs)');
+      data.addColumn('number','Write Max Latency (μs)');
+      data.addColumn('number','Write 95%ile Latency (ms)');
+      data.addColumn('number','Write 99%ile Latency (ms)');
+      data.addColumn('number','Read Avg Latency (μs)');
+      data.addColumn('number','Read Min Latency (μs)');
+      data.addColumn('number','Read Max Latency (μs)');
+      data.addColumn('number','Read 95%ile Latency (ms)');
+      data.addColumn('number','Read 99%ile Latency (ms)');
+      
+      var runlen=jsonData[0].data.length;
+      for ( var j = 0; j < runlen; j++) {
+         for ( var i = 0; i < jsonData.length; i++) {
+          var cols = [];
+          var rundata=jsonData[i].data;
+          var idx = 0;
+          if (jsonData[i].description != null) {
+            cols[idx++]=jsonData[i].description;
+          }else{
+            cols[idx++]=""+jsonData[i].timestamp;
+          }
+          cols[idx++]=rundata[j].wrkldid;
+          cols[idx++]=rundata[j].wrkldtype;
+          cols[idx++]=rundata[j].threads;
+          cols[idx++]=rundata[j].throughput;
+         if(rundata[j].wrkldtype == "READ" || rundata[j].wrkldtype == "SCAN"){
+            cols[idx++]=null;
+            cols[idx++]=null;
+            cols[idx++]=null;
+            cols[idx++]=null
+            cols[idx++]=null;
+         }else{
+            cols[idx++]=rundata[j].wavg;
+            cols[idx++]=rundata[j].wmin;
+            cols[idx++]=rundata[j].wmax;
+            cols[idx++]=rundata[j].wp95;
+            cols[idx++]=rundata[j].wp99;
+         }
+
+         if(rundata[j].wrkldtype == "LOAD" || rundata[j].wrkldtype == "DELETE"){
+            cols[idx++]=null;
+            cols[idx++]=null;
+            cols[idx++]=null;
+            cols[idx++]=null
+            cols[idx++]=null;
+         }else{
+            cols[idx++]=rundata[j].ravg;
+            cols[idx++]=rundata[j].rmin;
+            cols[idx++]=rundata[j].rmax;
+            cols[idx++]=rundata[j].rp95;
+            cols[idx++]=rundata[j].rp99;
+         }
+         data.addRow(cols);
+         data.setRowProperty(i+j,'style', 'background-color:red');
+        }
+      }
+
+      var cssClasses = {'headerCell': 'headerstyle', 'tableCell':'mystyle'};
+      if(statstable == null) {
+        statstable = new google.visualization.Table(document.getElementById('stats_table_div'));
+      }
+      statstable.draw(data, {'allowHtml':true, 'showRowNumber': true, 'width': '95%', 'cssClassNames': cssClasses});
     }
 
     function drawThroughputChart() {
@@ -1510,6 +1600,9 @@
     <br>
 
     <table id="table" class="equalDivide" cellpadding="0" cellspacing="0" width="100%" border="0">
+    <tr>
+         <div id="stats_table_div" align="center"></div>
+    </tr>
     <tr>
         <div id="tp_div" style="height: 500px;"></div>
     </tr>
