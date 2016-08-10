@@ -42,7 +42,7 @@
 
 	mysql_select_db("perfdb", $con); 
 
-	$statement = "SELECT runid,timestamp,os,build,driver,totalcpus,totalmemory,disktype,numdisks,nummfs,totalspace,numclients,numnodes,tabletype,numtables,numregions,datasize,rowsize,network,description FROM tblycsbrun";
+	$statement = "SELECT runid,timestamp,os,maprbuild,driver,description,disktype,hadoopversion,mfsinstances,writetp,readtp,teststatus,nodes,joblogs,configuration FROM tbldfsio";
 
 	if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($driver) || ! empty($runid) || ! empty($timestamp) || ! empty($desc)) {
 		$statement=$statement." WHERE ";
@@ -60,7 +60,7 @@
 	}
 	if (! empty($build) ){
 		$statement=($appendAND)?$statement." AND ":$statement;
-		$statement=$statement." build like '%".$build."%' ";
+		$statement=$statement." maprbuild like '%".$build."%' ";
 		$appendAND=TRUE;
 	}
 	if (! empty($os)){
@@ -104,23 +104,20 @@
 	  $meta=$meta."\"runid\":".$row["runid"].",";
 	  $meta=$meta."\"timestamp\":".$row['timestamp'].",";
 	  $meta=$meta."\"os\":\"".$row['os']."\",";
-	  $meta=$meta."\"build\":\"".$row['build']."\",";
+	  $meta=$meta."\"maprbuild\":\"".$row['maprbuild']."\",";
 	  $meta=$meta."\"driver\":\"".$row['driver']."\",";
-	  $meta=$meta."\"totalcpus\":".$row['totalcpus'].",";
+	  $meta=$meta."\"description\":\"".$row['description']."\",";
 	  $meta=$meta."\"disktype\":\"".$row['disktype']."\",";
-	  $meta=$meta."\"totalmemory\":".$row['totalmemory'].",";
-	  $meta=$meta."\"totalspace\":".$row['totalspace'].",";
-	  $meta=$meta."\"numclients\":".$row['numclients'].",";
-	  $meta=$meta."\"numdisks\":".$row['numdisks'].",";
-	  $meta=$meta."\"nummfs\":".$row['nummfs'].",";
-	  $meta=$meta."\"numnodes\":".$row['numnodes'].",";
-	  $meta=$meta."\"tabletype\":\"".$row['tabletype']."\",";
-	  $meta=$meta."\"numtables\":".$row['numtables'].",";
-	  $meta=$meta."\"numregions\":".$row['numregions'].",";
-	  $meta=$meta."\"datasize\":".$row['datasize'].",";
-	  $meta=$meta."\"rowsize\":\"".$row['rowsize']."\",";
-	  $meta=$meta."\"network\":\"".$row['network']."\",";
-	  $meta=$meta."\"description\":\"".$row['description']."\"";
+	  $meta=$meta."\"hadoopversion\":\"".$row['hadoopversion']."\",";
+
+	  $meta=$meta."\"mfsinstances\":".$row['mfsinstances'].",";
+	  $meta=$meta."\"writetp\":".$row['writetp'].",";
+	  $meta=$meta."\"readtp\":".$row['readtp'].",";
+	  $meta=$meta."\"teststatus\":\"".$row['teststatus']."\",";
+	  $meta=$meta."\"nodes\":".$row['nodes'].",";
+	  $meta=$meta."\"joblogs\":".$row['joblogs'].",";
+	  $meta=$meta."\"configuration\":".$row['configuration'];
+	  
 	  $meta=$meta."}";
 	} 
 

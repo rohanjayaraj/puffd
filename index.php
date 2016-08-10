@@ -44,28 +44,28 @@ Flight::route('POST /', function(){
                 $terasort = json_decode($data['terasort']);
                 if (! empty($terasort)){
                     $retval = handleTeraSort($terasort);
-                    #print("\TERASORT RUNID => ".$retval);
+                    print("\TERASORT RUNID => ".$retval);
                 }
             }else if (! empty($data['rwspeed'])){
                 #var_dump($_POST);
                 $rwspeed = json_decode($data['rwspeed']);
                 if (! empty($rwspeed)){
                     $retval = handleRWSpeed($rwspeed);
-                    #print("\nRWSpeed RUNID => ".$retval);
+                    print("\nRWSpeed RUNID => ".$retval);
                 }
             }else if (! empty($data['rubixRunInfo'])){
                 #var_dump($_POST);
                 $rubixinfo = json_decode($data['rubixRunInfo']);
-                if (! empty($var_dump)){
-                    $retval = handleRubixInfo($var_dump);
-                    #print("\nRubixRunInfo RUNID => ".$retval);
+                if (! empty($rubixinfo)){
+                    $retval = handleRubixInfo($rubixinfo);
+                    print("\nRubixRunInfo RUNID => ".$retval);
                 }
             }else if (! empty($data['rubixRunData'])){
-                #var_dump($_POST);
+                var_dump($_POST);
                 $rubixdata = json_decode($data['rubixRunData']);
                 if (! empty($rubixdata)){
                     $retval = handleRubixData($rubixdata);
-                    #print("\nRubixData RUNID => ".$retval);
+                    print("\nRubixRunData RUNID => ".$retval);
                 }
             }else{
                 return;
@@ -366,6 +366,7 @@ function handleDFSIO($json)
         $runid=getRunIDForTimestamp2($timestamp,"tbldfsio");
         if($runid != 0)
         {
+            print("\n [handleDFSIO] Timestamp ".$timestamp." is already present! \n");
             return $runid;
         }
         insertRecord("tbldfsio", $fields, $values);
@@ -441,6 +442,7 @@ function handleTeraSort($json)
         $runid=getRunIDForTimestamp2($timestamp,"tblterasort");
         if($runid != 0)
         {
+            print("\n [handleTeraSort] Timestamp ".$timestamp." is already present! \n");
             return $runid;
         }
         insertRecord("tblterasort", $fields, $values);
@@ -487,11 +489,11 @@ function handleRWSpeed($json)
         $values=NULL;
         $timestamp=NULL;
         
-        echo 'Running handleRWSpeed ::';
+        #echo 'Running handleRWSpeed ::';
         
         foreach($json as $key => $value) 
         {
-            #print($key." =>".$value);
+            print($key." =>".$value);
             if(!validRWSpeedField($key))
             {
                 return -1;
@@ -503,7 +505,8 @@ function handleRWSpeed($json)
             }else if($key == "nodes"){
                 $value=mysql_real_escape_string($value);
             } 
-            print("\n".$key." =>".$value."\n");
+            #print("\n".$key." =>".$value."\n");
+
             if(is_null($fields)){
                 $fields=$key;
                 $values="\"".$value."\"";
@@ -520,6 +523,7 @@ function handleRWSpeed($json)
         $runid=getRunIDForTimestamp2($timestamp,"tblrwspeed");
         if($runid != 0)
         {
+            print("\n [handleRWSpeed] Timestamp ".$timestamp." is already present! \n");
             return $runid;
         }
         insertRecord("tblrwspeed", $fields, $values);
@@ -606,6 +610,7 @@ function validRubixInfoField($field){
     switch ($field) {
         case "timestamp":
         case "os":
+        case "platform":
         case "buildversion":
         case "hostname":
         case "messagesize":
@@ -614,6 +619,10 @@ function validRubixInfoField($field){
         case "nummfs":
         case "numsp":
         case "description":
+        case "duration":
+        case "numtopics":
+        case "numpartitions":
+        case "disktype":
             $retval=true;
             break;
         default:
@@ -654,6 +663,9 @@ function handleRubixData($json)
             if(is_null($fields)){
                 $fields=$key;
                 $values="\"".$value."\"";
+            } else if(strlen($value) == 0){
+                $fields=$fields.",".$key;
+                $values=$values.",NULL";
             } else {
                 $fields=$fields.",".$key;
                 $values=$values.",\"".$value."\"";
@@ -664,7 +676,7 @@ function handleRubixData($json)
         $runid=getRunIDForTimestamp2($timestamp,"tblrubixruninfo");
         if($runid == 0)
         {
-            print("\n [handleRubixData] Timestamp ".$timestamp." is added to tblrubixruninfo table yet! \n");
+            print("\n [handleRubixData] Timestamp ".$timestamp." is NOT added to tblrubixruninfo table yet! \n");
             return -3;
         } 
         else
@@ -689,6 +701,7 @@ function handleRubixData($json)
 function validRubixDataField($field){
     $retval=false;
     switch ($field) {
+        case "timestamp": 
         case "testid": 
         case "testtype":
         case "replfactor":
@@ -810,7 +823,7 @@ function insertRecord($table, $fields, $values) {
         $statement="insert into ".$table." (".$fields.") VALUES (".$values.")";
         $stmt = $db->prepare($statement);
         $stmt->execute();
-        print("\nStatement : ".$statement);
+        #print("\nStatement : ".$statement);
     }catch (Exception $e) {
         echo '[insertRecord] Caught exception: ',  $e->getMessage(), "\n";
     } 
