@@ -1,0 +1,12 @@
+RewriteEngine On
+
+
+Options -Indexes -MultiViews
+#DirectoryIndex index.html
+#DirectorySlash Off
+
+#RewriteRule ^(.*)$ /fetch.php [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule .* index.php [QSA,L]
