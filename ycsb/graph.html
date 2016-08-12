@@ -255,6 +255,9 @@
             dataType: "json",
             async: false
             }).responseText;
+            if(ycsbRunData.length < 10){
+              alert("No throughput/latency data available");
+            }
         } else {
             ycsbRunData=null;
         }

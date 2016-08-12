@@ -45,6 +45,8 @@ Flight::route('POST /', function(){
                 if (! empty($terasort)){
                     $retval = handleTeraSort($terasort);
                     print("\TERASORT RUNID => ".$retval);
+                }else{
+                    print("Empty JSON for TERASORT -> ".$data['terasort']);
                 }
             }else if (! empty($data['rwspeed'])){
                 #var_dump($_POST);
@@ -333,12 +335,11 @@ function handleDFSIO($json)
         $values=NULL;
         $timestamp=NULL;
         
-        echo 'Running handleDFSIO ::';
+        #echo 'Running handleDFSIO ::';
         
         foreach($json as $key => $value) 
         {
-            print("\n".$key." =>".$value."\n");
-            print($key." =>".$value);
+            #print($key." =>".$value);
             if(!validDFSIOField($key))
             {
                 return -1;
@@ -353,8 +354,12 @@ function handleDFSIO($json)
             } 
             else if($key == "configuration"){
                 $value=mysql_real_escape_string($value);
+            }else if($key == "nodes"){
+                $value=mysql_real_escape_string($value);
             }
 
+            #print("\n".$key." =>".$value."\n");
+            
             if(is_null($fields)){
                 $fields=$key;
                 $values="\"".$value."\"";
@@ -413,7 +418,6 @@ function handleTeraSort($json)
         
         foreach($json as $key => $value) 
         {
-            #print("\n".$key." =>".$value."\n");
             #print($key." =>".$value);
             if(!validTeraSortField($key))
             {
@@ -426,10 +430,13 @@ function handleTeraSort($json)
             }
             else if($key == "joblogs"){
                 $value=mysql_real_escape_string($value);
-            } 
-            else if($key == "configuration"){
+            }else if($key == "configuration"){
+                $value=mysql_real_escape_string($value);
+            }else if($key == "nodes"){
                 $value=mysql_real_escape_string($value);
             }
+
+            #print("\n".$key." =>".$value."\n");
 
             if(is_null($fields)){
                 $fields=$key;
@@ -465,6 +472,7 @@ function validTeraSortField($field){
         case "hadoopversion":
         case "joblogs":
         case "configuration":
+        case "nodes":
         case "runtime":
         case "secure":
         case "encryption":

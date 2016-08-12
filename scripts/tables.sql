@@ -99,6 +99,7 @@ CREATE TABLE tblterasort (
          mfsinstances INT,
          joblogs LONGTEXT,
          configuration LONGTEXT,
+         nodes VARCHAR(2000),
          runtime INT,
          secure VARCHAR(10),
          encryption VARCHAR(10),
