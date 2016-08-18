@@ -1,0 +1,287 @@
+<html>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<head>
+  <link rel="shortcut icon" type="image/x-icon" href="graph.ico" />
+  <title>Rubix Graphs</title>
+  <style type='text/css'>
+  .bold-font {
+    font-weight: bold;
+  }
+
+  .italic-font {
+    font-style: italic;
+  }
+
+  .large-font {
+    font-size: 15px;
+  }
+
+  .grey-background {
+    background-color: #EAEDED;
+  }
+
+  .blue-text {
+    color: #3498DB;
+  }
+
+  .orange-text {
+    color: #E67E22;
+  }
+
+  .red-text {
+    color: #E74C3C;
+  }
+
+  .search-bar {
+    height: 10px;
+    background-color: #e1e1e1;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    position:relative;
+    width:150px
+  }
+
+  .search-bar .searchbutton {
+    position:absolute;
+    top:0%;
+    right:0px;
+    height:20px;
+  }
+
+  .sfield {
+    float: left;
+    margin: 0px 0 0 8px;
+    font: 8pt Arial;
+    font-weight: bold;
+    border-radius: 10px 10px 10px 10px;
+    color: #000000;
+    height: 18px;
+    line-height: 0px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    max-width: 150px
+  }
+
+  .headerstyle{
+    background: #31D3AB;
+    font: 12px Courier;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .mystyle {
+    color: #072832;
+    font: 11px Verdana;
+    text-align: center;
+  }
+
+  .checkboxtext
+  {
+    /* Checkbox text */
+    font-size: 100%;
+    display: inline;
+  }
+
+  </style>
+
+  <!--Load the AJAX API-->
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script type="text/javascript">
+
+  var ycsbData=null;
+  var table;
+  var statstable;
+
+  google.charts.load('current', {'packages':['corechart', 'table', 'line']});
+
+  // Set a callback to run when the Google Visualization API is loaded.
+  google.charts.setOnLoadCallback(drawRunInfoTable);
+
+  function drawRunInfoTable() {
+    var lurl = "http://10.10.88.136/puffd/rubix/meta.php";
+    var param=false;
+lurl+="?rows=10";
+var rubixMetadata = $.ajax({
+  url: lurl,
+  dataType: "json",
+  async: false
+}).responseText;
+
+var jsonData = JSON.parse(rubixMetadata);
+tabledata = new google.visualization.DataTable();
+
+tabledata.addColumn('string', 'Timestamp');
+tabledata.addColumn('string', 'Build');
+tabledata.addColumn('string', 'Platform');
+tabledata.addColumn('number', 'Message Size (in Bytes)');
+tabledata.addColumn('number', 'Duration (in sec)');
+tabledata.addColumn('number', '# of Topics');
+tabledata.addColumn('number', '# of Partitions');
+tabledata.addColumn('number', '# of Server Nodes');
+tabledata.addColumn('string', 'Driver Node');
+tabledata.addColumn('number', '# of Disks/node');
+tabledata.addColumn('number', '# of MFS');
+tabledata.addColumn('number', '# of Storage Pools');
+tabledata.addColumn('string', 'Disk Type');
+tabledata.addColumn('string', 'Description');
+tabledata.addColumn('string', 'Date');
+tabledata.addColumn('string', 'OS');
+
+for ( var i = 0; i < jsonData.length; i++) {
+  var date = new Date(jsonData[i].timestamp);
+  var messagesize = jsonData[i].messagesize;
+  tabledata.addRow([""+jsonData[i].timestamp,
+  jsonData[i].buildversion,
+  jsonData[i].platform,
+  jsonData[i].messagesize,
+  jsonData[i].duration,
+  jsonData[i].numtopics,
+  jsonData[i].numpartitions,
+  jsonData[i].server,
+  jsonData[i].hostname,
+  jsonData[i].numdisks,
+  jsonData[i].nummfs,
+  jsonData[i].numsp,
+  jsonData[i].disktype,
+  jsonData[i].description,
+  date.toString(),
+  jsonData[i].os
+]);
+}
+var cssClasses = {'headerCell': 'googleHeaderCell', 'oddTableRow': 'grey-background', 'selectedTableRow' : 'italic-font blue-text'};
+table = new google.visualization.Table(document.getElementById('runinfo_table_div'));
+google.visualization.events.addListener(table, 'select', selectHandler);
+table.draw(tabledata, {'showRowNumber': true, 'width': '100%', 'alternatingRowStyle': true, 'cssClassNames': cssClasses});
+}
+
+function selectHandler(e) {
+  var selection = table.getSelection();
+  var message = '';
+  var timestamp;
+  for (var i = 0; i < selection.length; i++) {
+    var item = selection[i];
+    if (item.row != null) {
+      var str = tabledata.getFormattedValue(item.row, 0);
+      timestamp=timestamp==null?str:timestamp+","+str;
+      message += '{row:' + item.row + ', column:none}; value (col 0) = ' + str + '\n';
+    }
+  }
+  if (timestamp == null) {
+    message = 'nothing';
+  }else{
+    //ycsbRunLogURL="http://10.10.88.136/puffd/ycsb/datalog.php?timestamp="+timestamp
+    ycsbData = $.ajax({
+      url: "http://10.10.88.136/puffd/rubix/data.php?timestamp="+timestamp,
+      dataType: "json",
+      async: false
+    }).responseText;
+    //alert('You selected ' + timestamp);
+    console.log(ycsbData);
+
+    /*var newurl = window.location.href;
+    if (newurl.indexOf('?') == -1){
+    newurl += '?runid='+timestamp;
+  }else{
+  newurl = newurl.substring(0, newurl.indexOf('?')) + '?runid='+timestamp;
+}
+window.history.replaceState("object or string", "Title", newurl);*/
+}
+//alert(message);
+drawEverything();
+}
+
+function drawEverything() {
+  if(ycsbData==null){
+    return;
+  }
+
+  drawStatsTable();
+}
+
+function drawStatsTable(){
+  var jsonData = JSON.parse(ycsbData);
+  var data = new google.visualization.DataTable();
+  data.addColumn('string','Run ID');
+  data.addColumn('string','Test ID');
+  data.addColumn('string','Test Type');
+  data.addColumn('number','Replication');
+  data.addColumn('string','Compression');
+  data.addColumn('number','Number of Clients');
+  data.addColumn('number','Throughput (msgs/sec/server)');
+  data.addColumn('number','Average Time to Finish (sec)');
+  data.addColumn('number','Standard Deviation in (%)');
+  data.addColumn('number','Average Lag (ms)');
+  data.addColumn('number','Average of Min Lag (ms)');
+  data.addColumn('number','Average of Max Lag (ms)');
+  data.addColumn('number','Absolute Min Lag (ms)');
+  data.addColumn('number','Absolute Max Lag (ms)');
+
+  var runlen=jsonData[0].data.length;
+  for ( var j = 0; j < runlen; j++) {
+    for ( var i = 0; i < jsonData.length; i++) {
+      var cols = [];
+      var rundata=jsonData[i].data;
+      var idx = 0;
+      cols[idx++]=""+jsonData[i].timestamp;
+      cols[idx++]=rundata[j].testid;
+      cols[idx++]=rundata[j].testtype;
+      cols[idx++]=rundata[j].replfactor;
+      cols[idx++]=rundata[j].compression;
+      cols[idx++]=rundata[j].numclients;
+      cols[idx++]=rundata[j].throughput;
+      if(rundata[j].testtype == "PRODUCER" || rundata[j].testtype == "SLACKER-PRODUCER" || rundata[j].testtype == "TANGO-PRODUCER") {
+        cols[idx++]=null;
+        cols[idx++]=null;
+        cols[idx++]=null;
+        cols[idx++]=null
+        cols[idx++]=null;
+        cols[idx++]=null;
+        cols[idx++]=null;
+      } else {
+        cols[idx++]=rundata[j].avgtimetofinish;
+        cols[idx++]=rundata[j].stddevduration;
+        if(rundata[j].testtype == "CONSUMER") {
+          cols[idx++]=null;
+          cols[idx++]=null
+          cols[idx++]=null;
+          cols[idx++]=null;
+          cols[idx++]=null;
+        } else {
+          cols[idx++]=rundata[j].avglag;
+          cols[idx++]=rundata[j].avgofminlag;
+          cols[idx++]=rundata[j].avgofmaxlag;
+          cols[idx++]=rundata[j].absminlag;
+          cols[idx++]=rundata[j].absmaxlag;
+        }
+      }
+      data.addRow(cols);
+      data.setRowProperty(i+j,'style', 'background-color:red');
+    }
+  }
+  var cssClasses = {'headerCell': 'headerstyle', 'tableCell':'mystyle'};
+  if(statstable == null) {
+    statstable = new google.visualization.Table(document.getElementById('stats_table_div'));
+  }
+  statstable.draw(data, {'allowHtml':true, 'showRowNumber': true, 'width': '95%', 'cssClassNames': cssClasses});
+}
+</script>
+</head>
+
+<body>
+  <a href="http://10.10.88.136/puffd/rubix"><i class="material-icons">home</i></a>
+  <h1 align="center" style="font-style: normal"> Summary of Rubix Results </h1>
+  <br>
+  <div id="runinfo_table_div"></div>
+  </br>
+
+<table id="table" class="equalDivide" cellpadding="0" cellspacing="0" width="100%" border="0">
+  <tr>
+    <div id="stats_table_div" align="center"></div>
+  </tr>
+</table>
+
+</body>
+</html>

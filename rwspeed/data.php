@@ -42,7 +42,7 @@
 
 	mysql_select_db("perfdb", $con); 
 
-	$statement = "SELECT runid,timestamp,os,build,mfsinstances,nodes,description,status,disktype,driver,secure,networkencryption,hadoopversion,repl1localread,repl1localwrite,repl1remoteread,repl1remotewrite,repl3localread,repl3localwrite,repl3remoteread,repl3remotewrite FROM tblrwspeed";
+	$statement = "SELECT runid,timestamp,os,build,mfsinstances,numsp,nodes,description,status,disktype,driver,secure,networkencryption,hadoopversion,repl1localread,repl1localwrite,repl1remoteread,repl1remotewrite,repl3localread,repl3localwrite,repl3remoteread,repl3remotewrite FROM tblrwspeed";
 
 	if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($driver) || ! empty($runid) || ! empty($timestamp) || ! empty($desc)) {
 		$statement=$statement." WHERE ";
@@ -106,6 +106,7 @@
 	  $meta=$meta."\"os\":\"".$row['os']."\",";
 	  $meta=$meta."\"build\":\"".$row['build']."\",";
 	  $meta=$meta."\"mfsinstances\":".$row['mfsinstances'].",";
+	  $meta=$meta."\"numsp\":".$row['numsp'].",";
 	  
 	  $meta=$meta."\"nodes\":".$row['nodes'].",";
 

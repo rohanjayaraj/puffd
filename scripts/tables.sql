@@ -119,6 +119,7 @@ CREATE TABLE tblrwspeed (
          os VARCHAR(50),
          build VARCHAR(50),
          mfsinstances INT,
+         numsp INT,
          nodes VARCHAR(2000),
          description VARCHAR(50),
          repl1localread INT,

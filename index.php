@@ -482,6 +482,7 @@ function validTeraSortField($field){
         case "avgshuffle":
         case "avgmerge":
         case "status":
+        case "mfsinstances":
             $retval=true;
             break;
         default:
@@ -553,6 +554,7 @@ function validRWSpeedField($field){
         case "description":
         case "hadoopversion":
         case "mfsinstances":
+        case "numsp":
         case "networkencryption":
         case "nodes":
         case "repl1localread":
