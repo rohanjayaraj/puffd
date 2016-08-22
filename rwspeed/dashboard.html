@@ -1,0 +1,178 @@
+<html>
+  <head>
+    <title>MapR FS Benchmark Analysis</title>
+    <!-- Bootstrap core CSS     -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+    <!--  Paper Dashboard core CSS    -->
+    <link href="assets/css/paper-dashboard.css" rel="stylesheet" />
+
+    <!--  Fonts and icons     -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Muli:400,300' rel='stylesheet' type='text/css'>
+    <link href="assets/css/themify-icons.css" rel="stylesheet">
+    <!-- AJAX API -->
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="assets/js/rwspeed.js"></script>
+  </head>
+  <body> <!--onload="drawRunInfoTable();">-->
+
+    <div class="wrapper">
+      <div class="sidebar" data-background-color=black
+           data-active-color="danger">
+        <!--
+          Tip 1: you can change the color of the sidebar's background using: data-background-color="white | black"
+          Tip 2: you can change the color of the active button using the data-active-color="primary | info | success | warning | danger"
+        -->
+
+        <div class="sidebar-wrapper">
+          <div class="logo">
+            <h2 class="text-danger"><small><a href="http://10.10.88.136/puffd/index.html" class="text-warning"><i class="ti-home" style="padding-right:5px;"></i></a>RWSpeedTest</small></h2>
+          </div>
+
+          <ul class="nav">
+            <li class="active"><a href="#runinfo_table_div"> <i class="ti-panel"></i><p>Dashboard</p></a></li>
+            <li><a href="#chart2"> <i class="ti-view-list-alt"></i><p>Graphs</p></a></li>
+            <li><a href="#table3"> <i class="ti-view-list-alt"></i><p>Group Graphs</p></a></li>
+            <li><a href="#table3"> <i class="ti-view-list-alt"></i><p>Guts</p></a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="main-panel">
+        <nav class="navbar">
+          <div class="container-fluid">
+            <h3>Dashboard</h3>
+          </div>
+        </nav>
+
+
+        <div class="content">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-12 card">
+                <div class="header">
+                  <p class="category">Display #rows <select id="tablelimit" onChange="changeTableList();">
+                    <option value=undefined selected></option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="all">all</option>
+                  </select></p>
+                </div>
+                <div class="content" id="runinfo_table_div" class="google-visualization-controls-theme-plus table "></div> <!--  class="ct-chart"></div> -->
+                <div class="footer">
+                  <hr>
+                  <div class="stats">PerfDB at http://10.10.88.136/phpmyadmin/index.php</div>
+                </div>
+            </div>
+          </div>
+
+          <div class="container-fluid row">
+            <div class="col-md-4">
+              <div class="card">
+                <div class="header">
+                  <h4 class="title">Search</h4>
+                  <p class="category">Reduce visible rows..</p>
+                </div>
+                <div class="content table-plain"> <!--  Search to update table1 -->
+                <table class="table table-striped">
+                  <tr><td>RunID</td><td><input type="text" class="form-control border-input" placeholder="45,34" id="runIdSearch"></td></tr>
+                  <tr><td>MapR Build</td><td><input type="text" class="form-control border-input" placeholder="5.2.0.39122.GA" id="buildSearch"></td></tr>
+                  <tr><td>#MFS</td><td><input type="text" class="form-control border-input" placeholder="1" id="mfsSearch" ></td></tr>
+                </table>
+                <div class="footer">
+                  <button type="submit" class="btn" onclick = "filterSearch();">Update Table<i class="ti-search"></i></button>
+                  <br/><br/>
+                </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card">
+                <div class="header">
+                  <h5>Let's pretty plot group results...</h5>
+                  <p><em><small>User search to select a table. Each table is one bar (average) on graph<small></em></p>
+                </div>
+                <div class="content table-plain"> <!--  Search tables for analysis -->
+                  <table class="table table-striped" id="asearch1">
+                    <tr>
+                      <td><h6>Search by</h6></td>
+                      <td><h6>Set1</h6></td>
+                      <td><h6>Set2</h6></td>
+                      <td><h6>Set3</h6></td>
+                      <td><h6>Set4</h6></td>
+                    </tr>
+                    <tr>
+                      <td>RunID</td>
+                      <td><input type="text" class="form-control border-input" id="prunidA1" ></td>
+                      <td><input type="text" class="form-control border-input" id="prunidA2" ></td>
+                      <td><input type="text" class="form-control border-input" id="prunidA3" ></td>
+                      <td><input type="text" class="form-control border-input" id="prunidA4" ></td>
+                    </tr>
+                    <tr>
+                      <td>MapR Build</td>
+                      <td><input type="text" class="form-control border-input" id="pbuildA1" ></td>
+                      <td><input type="text" class="form-control border-input" id="pbuildA2" ></td>
+                      <td><input type="text" class="form-control border-input" id="pbuildA3" ></td>
+                      <td><input type="text" class="form-control border-input" id="pbuildA4" ></td>
+                    </tr>
+                    <tr>
+                      <td>#MFS</td>
+                      <td><input type="text" class="form-control border-input" id="pmfsA1" ></td>
+                      <td><input type="text" class="form-control border-input" id="pmfsA2" ></td>
+                      <td><input type="text" class="form-control border-input" id="pmfsA3" ></td>
+                      <td><input type="text" class="form-control border-input" id="pmfsA4" ></td>
+                    </tr>
+                  </table>
+
+                <div class="footer">
+                  <button type="submit" class="btn" onclick = "selectTables();"> Plot <i class="ti-pencil"></i></button>
+                  <br/><br/>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plot simple graph -->
+        <div class="container-fluid row">
+          <div class="card col-md-12">
+            <div class="header">
+              <p class="category">Comparison of selected rows</p>
+            </div>
+            <div id="chart1" class="table table-striped"></div>
+            <div id="chart2"></div><br>
+          </div>
+        </div>
+
+        <div class="container-fluid row">
+          <div class="card col-md-12">
+            <div class="header">
+              <p class="category">Comparison of selected rows</p>
+            </div>
+            <div id="table3" class="table table-striped"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    </div>
+    <!-- Mitch this footer is nice but not practical 
+      <footer class="footer">
+      <div class="container-fluid">
+      <div class="copyright pull-right">
+      <a href="http://www.mapr.com" style="color:red">MapR Technologies</a> <img src="assets/img/elephant_red.png" alt="assets/img/elephant_red.png" width="42"/> 
+      </div>
+      </div>
+      </footer> -->
+
+
+      </div>
+  </body>
+
+
+</html>

@@ -84,16 +84,21 @@
     display: inline;
   }
 
-  </style>
 
+  </style>
+  <style>
+      table.equalDivide tr td { width:50%;}
+  </style>
   <!--Load the AJAX API-->
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
   <script type="text/javascript">
 
-  var ycsbData=null;
+  var rubixData=null;
   var table;
   var statstable;
+  var p1offchart;
+  var c1offchart;
 
   google.charts.load('current', {'packages':['corechart', 'table', 'line']});
 
@@ -173,13 +178,13 @@ function selectHandler(e) {
     message = 'nothing';
   }else{
     //ycsbRunLogURL="http://10.10.88.136/puffd/ycsb/datalog.php?timestamp="+timestamp
-    ycsbData = $.ajax({
+    rubixData = $.ajax({
       url: "http://10.10.88.136/puffd/rubix/data.php?timestamp="+timestamp,
       dataType: "json",
       async: false
     }).responseText;
     //alert('You selected ' + timestamp);
-    console.log(ycsbData);
+    console.log(rubixData);
 
     /*var newurl = window.location.href;
     if (newurl.indexOf('?') == -1){
@@ -194,15 +199,17 @@ drawEverything();
 }
 
 function drawEverything() {
-  if(ycsbData==null){
+  if(rubixData==null){
     return;
   }
 
   drawStatsTable();
+  drawProducerCompOffReplOne();
+  drawConsumerCompOffReplOne();
 }
 
 function drawStatsTable(){
-  var jsonData = JSON.parse(ycsbData);
+  var jsonData = JSON.parse(rubixData);
   var data = new google.visualization.DataTable();
   data.addColumn('string','Run ID');
   data.addColumn('string','Test ID');
@@ -267,6 +274,95 @@ function drawStatsTable(){
   }
   statstable.draw(data, {'allowHtml':true, 'showRowNumber': true, 'width': '95%', 'cssClassNames': cssClasses});
 }
+
+function drawProducerCompOffReplOne() {
+  var jsonData = JSON.parse(rubixData);
+  var data = new google.visualization.DataTable();
+  var colheaders = [];
+  for ( var i = 0; i < jsonData.length; i++) {
+     var cols = [];
+     var rundata=jsonData[i].data;
+        cols[0]=""+jsonData[i].timestamp+" - "+jsonData[i].buildversion;
+     var idx = 0;
+      for ( var j = 0; j < rundata.length; j++) {
+        if(rundata[j].testid != "p-repl1-off" && rundata[j].testid != "sp-repl1-off" && rundata[j].testid != "tp-repl1-off"){
+          continue;
+        }
+       colheaders[idx]=rundata[j].testtype;
+       cols[idx+1]=rundata[j].throughput;
+       idx++;
+     }
+     if(i==0){
+       data.addColumn('string','RunID');
+       for(var k=0; k < colheaders.length; k++){
+         data.addColumn('number', colheaders[k]);
+       }
+     }
+     data.addRow(cols);
+  }
+
+  var options = {
+    title : 'Producer Throughput for Repl 1 and Compression off',
+    vAxis: {title: '# msgs / sec / server', viewWindow: {min: 1000000}, gridlines: {count: 5}},
+    //hAxis: {title: 'Run'},
+    seriesType: 'bars',
+    height: 600,
+    chartArea: {  width: "50%", height: "70%" }
+  };
+
+  // if(p1offchart == null) {
+    p1offchart = new google.visualization.ComboChart(document.getElementById('p1off_div'));
+  // }
+  // if(genimg != null){
+    // Wait for the chart to finish drawing before calling the getImageURI() method.
+    // google.visualization.events.addListener(p1offchart, 'ready', function () {
+    //   p1off_div.innerHTML = '<img src="' + p1offchart.getImageURI() + '">';
+    // });
+  // }
+  p1offchart.draw(data, options);
+}
+
+function drawConsumerCompOffReplOne() {
+  var jsonData = JSON.parse(rubixData);
+  var data = new google.visualization.DataTable();
+  var colheaders = [];
+  for ( var i = 0; i < jsonData.length; i++) {
+     var cols = [];
+     var rundata=jsonData[i].data;
+        cols[0]=""+jsonData[i].timestamp+" - "+jsonData[i].buildversion;
+     var idx = 0;
+      for ( var j = 0; j < rundata.length; j++) {
+        if(rundata[j].testid != "c-repl1-off" && rundata[j].testid != "sc-repl1-off" && rundata[j].testid != "tc-repl1-off"){
+          continue;
+        }
+       colheaders[idx]=rundata[j].testtype;
+       cols[idx+1]=rundata[j].throughput;
+       idx++;
+     }
+     if(i==0){
+       data.addColumn('string','RunID');
+       for(var k=0; k < colheaders.length; k++){
+         data.addColumn('number', colheaders[k]);
+       }
+     }
+     data.addRow(cols);
+  }
+
+  var options = {
+    title : 'Consumer Throughput for Repl 1 and Compression off',
+    vAxis: {title: '# msgs / sec / server', gridlines: {count: 5}},
+    //hAxis: {title: 'Run'},
+    seriesType: 'bars',
+    height: 600,
+    chartArea: {  width: "50%", height: "70%" }
+  };
+
+  // if(c1offchart == null) {
+    c1offchart = new google.visualization.ComboChart(document.getElementById('c1off_div'));
+  // }
+  c1offchart.draw(data, options);
+}
+
 </script>
 </head>
 
@@ -281,6 +377,17 @@ function drawStatsTable(){
   <tr>
     <div id="stats_table_div" align="center"></div>
   </tr>
+  <tr>
+    <td id="td_p1off">
+      <div id="p1off_div" style="height: 400px;"></div>
+    </td>
+    <td id="td_c1off">
+      <div id="c1off_div" style="height: 400px;"></div>
+    </td>
+    <!-- <td id="td_wavg">
+       <div id="wavg_div" style="height: 400px;"></div>
+    </td> -->
+</tr>
 </table>
 
 </body>
