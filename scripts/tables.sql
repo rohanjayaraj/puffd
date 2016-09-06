@@ -17,6 +17,7 @@ CREATE TABLE tblycsbrun (
          numtables INT NOT NULL,
          numregions INT,
          datasize BIGINT NOT NULL,
+         rowcount BIGINT NOT NULL,
          rowsize VARCHAR(50),
          network VARCHAR(50),
          workload LONGTEXT,

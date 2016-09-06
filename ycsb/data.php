@@ -27,7 +27,7 @@
 
 	mysql_select_db("perfdb", $con); 
 
-	$statement = "SELECT b.runid,b.timestamp,b.os,b.build,b.driver,b.totalcpus,b.totalmemory,b.disktype,b.totalspace,b.numclients,b.numnodes,b.numtables,b.numregions, b.datasize, b.rowsize, b.network, b.description, a.wrkldid, a.wrkldtype, a.threads, a.throughput, a.wavg, a.wmin, a.wmax, a.wp95, a.wp99, a.ravg, a.rmin, a.rmax, a.rp95, a.rp99 FROM tblycsbstats a, tblycsbrun b where a.runid=b.runid ";
+	$statement = "SELECT b.runid,b.timestamp,b.os,b.build,b.driver,b.totalcpus,b.totalmemory,b.disktype,b.totalspace,b.numclients,b.numnodes,b.numtables,b.numregions, b.datasize, b.rowcount, b.rowsize, b.network, b.description, a.wrkldid, a.wrkldtype, a.threads, a.throughput, a.wavg, a.wmin, a.wmax, a.wp95, a.wp99, a.ravg, a.rmin, a.rmax, a.rp95, a.rp99 FROM tblycsbstats a, tblycsbrun b where a.runid=b.runid ";
 
 	if (! empty($runid)) {
 		$statement=$statement." AND b.runid in (".$runid.") ORDER BY runid,id DESC";
@@ -74,6 +74,7 @@
 			$data=$data."\"numtables\":".$row['numtables'].",";
 			$data=$data."\"numregions\":".$row['numregions'].",";
 			$data=$data."\"datasize\":".$row['datasize'].",";
+			$data=$data."\"rowcount\":".$row['rowcount'].",";
 			$data=$data."\"rowsize\":\"".$row['rowsize']."\",";
 			$data=$data."\"network\":\"".$row['network']."\",";
 			$data=$data."\"description\":\"".$row['description']."\",";

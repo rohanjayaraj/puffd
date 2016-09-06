@@ -395,6 +395,7 @@
       tabledata.addColumn('string', 'Driver Node');
       tabledata.addColumn('string', 'Row Size');
       tabledata.addColumn('number', 'Data Size (GB)');
+      tabledata.addColumn('number', 'Row Count');
       tabledata.addColumn('string', 'Table Type');
       tabledata.addColumn('number', '# of Tables');
       tabledata.addColumn('number', '# of Regions');
@@ -419,6 +420,7 @@
          jsonData[i].driver, 
          ""+jsonData[i].rowsize, 
          datasize, 
+         jsonData[i].rowcount, 
          jsonData[i].tabletype, 
          jsonData[i].numtables, 
          jsonData[i].numregions, 

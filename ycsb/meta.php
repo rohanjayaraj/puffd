@@ -42,7 +42,7 @@
 
 	mysql_select_db("perfdb", $con); 
 
-	$statement = "SELECT runid,timestamp,os,build,driver,totalcpus,totalmemory,disktype,numdisks,nummfs,totalspace,numclients,numnodes,tabletype,numtables,numregions,datasize,rowsize,network,description FROM tblycsbrun";
+	$statement = "SELECT runid,timestamp,os,build,driver,totalcpus,totalmemory,disktype,numdisks,nummfs,totalspace,numclients,numnodes,tabletype,numtables,numregions,datasize,rowcount,rowsize,network,description FROM tblycsbrun";
 
 	if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($driver) || ! empty($runid) || ! empty($timestamp) || ! empty($desc)) {
 		$statement=$statement." WHERE ";
@@ -118,6 +118,7 @@
 	  $meta=$meta."\"numtables\":".$row['numtables'].",";
 	  $meta=$meta."\"numregions\":".$row['numregions'].",";
 	  $meta=$meta."\"datasize\":".$row['datasize'].",";
+	  $meta=$meta."\"rowcount\":".$row['rowcount'].",";
 	  $meta=$meta."\"rowsize\":\"".$row['rowsize']."\",";
 	  $meta=$meta."\"network\":\"".$row['network']."\",";
 	  $meta=$meta."\"description\":\"".$row['description']."\"";

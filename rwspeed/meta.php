@@ -7,6 +7,7 @@
     $build="";
     $desc="";
     $rows="";
+    $driver="";
 
     foreach ($_GET as $key => $value) {
    		 //print("\n".$key." => ".$value);
@@ -24,6 +25,8 @@
    		 	$build=$value;
    		 }else if (strcasecmp($key,"os") == 0) {
    		 	$os=$value;
+   		 }else if (strcasecmp($key,"driver") == 0) {
+   		 	$driver=$value;
    		 }else if (strcasecmp($key,"description") == 0) {
    		 	$desc=$value;
    		 }else if (strcasecmp($key,"rows") == 0) {
@@ -31,7 +34,7 @@
    		 }	 	
 	}
 	
-	$con = mysql_connect("10.10.88.136","root",""); 
+	$con = mysql_connect("localhost","root",""); 
 	if (!$con) 
 	{ 
 		die('Could not connect: ' . mysql_error()); 
@@ -39,7 +42,7 @@
 
 	mysql_select_db("perfdb", $con); 
 
-	$statement = "SELECT runid,timestamp,os,build,mfsinstances,disktype,description,repl1localread,repl1localwrite,repl1remoteread,repl1remotewrite,repl3localread,repl3localwrite,repl3remoteread,repl3remotewrite FROM tblrwspeed";
+	$statement = "SELECT runid,timestamp,os,build,mfsinstances,driver,disktype,description,repl1localread,repl1localwrite,repl1remoteread,repl1remotewrite,repl3localread,repl3localwrite,repl3remoteread,repl3remotewrite FROM tblrwspeed";
 
 	if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($desc)) {
 		$statement=$statement." WHERE ";
@@ -58,6 +61,11 @@
 	if (! empty($build) ){
 		$statement=($appendAND)?$statement." AND ":$statement;
 		$statement=$statement." build like '%".$build."%' ";
+		$appendAND=TRUE;
+	}
+	if (! empty($driver) ){
+		$statement=($appendAND)?$statement." AND ":$statement;
+		$statement=$statement." driver like '%".$driver."%' ";
 		$appendAND=TRUE;
 	}
 	if (! empty($os)){
@@ -96,6 +104,7 @@
 	  $meta=$meta."\"runid\":".$row["runid"].",";
 	  $meta=$meta."\"timestamp\":".$row['timestamp'].",";
 	  $meta=$meta."\"build\":\"".$row['build']."\",";
+	  $meta=$meta."\"driver\":\"".$row['driver']."\",";
     $meta=$meta."\"repl1localread\":".$row['repl1localread'].",";
     $meta=$meta."\"repl1localwrite\":".$row['repl1localwrite'].",";
     $meta=$meta."\"repl1remoteread\":".$row['repl1remoteread'].",";

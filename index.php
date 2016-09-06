@@ -142,6 +142,7 @@ function validInfoField($field){
         case "numregions":
 
         case "datasize":
+        case "rowcount":
         case "rowsize":
         case "network":
         case "description":

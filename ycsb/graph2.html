@@ -125,6 +125,7 @@
     var table;
     var statstable;
     var tpchart;
+    var tpchart2;
     var ravgchart;
     var rminchart;
     var rmaxchart;
@@ -207,6 +208,7 @@
       }
       // Draw Throughput 
       drawThroughputChart();
+      drawThroughputChart2();
       if(!render){
         return;
       }
@@ -255,6 +257,9 @@
             dataType: "json",
             async: false
             }).responseText;
+            if(ycsbRunData.length < 10){
+              alert("No throughput/latency data available");
+            }
         } else {
             ycsbRunData=null;
         }
@@ -642,6 +647,102 @@
         tpchart.draw(data, options2);
       }else{
         tpchart.draw(data, options);
+      }
+
+      render=true;
+    }
+
+    function drawThroughputChart2() {
+      var jsonData = JSON.parse(ycsbData);
+      var data = new google.visualization.DataTable();
+
+      data.addColumn('string','Workload');
+      for ( var i = 0; i < jsonData.length; i++) {
+        var runid = null;
+        if (jsonData[i].description != null) {
+            runid=jsonData[i].description+" - " + jsonData[i].disktype + " - " + jsonData[i].build;
+          }else{
+            runid=""+jsonData[i].timestamp;
+          }
+        data.addColumn('number',runid);
+      }
+
+      var alldata;
+      var perserver = false;
+      for ( var i = 0; i < jsonData.length; i++) {
+         //console.log(jsonData[i]);
+         if(i==0){
+          alldata = new Array(jsonData[i].data.length);
+         }
+         var rundata=jsonData[i].data;
+          for ( var j = 0; j < rundata.length; j++) {
+            if(i==0){
+              alldata[j] = new Array(jsonData.length);
+              alldata[j][0] = rundata[j].wrkldid;
+            }
+            var numnodes=jsonData[i].numnodes;
+            var numclients=jsonData[i].numclients;
+            var totaltpt=rundata[j].throughput*numclients;
+             
+            if(numnodes < numclients){
+              perserver = true;
+            }
+            var tpt=Math.round(totaltpt/numnodes);
+            alldata[j][i+1]=tpt;
+           }
+      }
+
+      for(var i=0; i<alldata.length; i++){
+        data.addRow(alldata[i]);
+      }
+
+      var options = {
+        title : 'Throughput (Client)',
+        vAxis: {title: 'ops/sec/client', gridlines: { count: 10 }},
+        //hAxis: {title: 'Run'},
+        seriesType: 'bars',
+        chartArea: {  width: "50%", height: "70%" },
+        annotations: {
+          textStyle: {
+            fontSize: 10,
+            italic: false,
+            bold: false
+          }
+        }
+      };
+
+      var options2 = {
+        title : 'Throughput (Server)',
+        vAxis: {title: 'ops/sec/server', gridlines: { count: 10 }},
+        //hAxis: {title: 'Run'},
+        seriesType: 'bars',
+        chartArea: {  width: "50%", height: "70%" },
+        annotations: {
+          textStyle: {
+            fontSize: 12,
+            italic: false,
+            bold: false
+          }
+        }
+      };
+
+      if(tpchart2 == null) {
+        tpchart2 = new google.visualization.ComboChart(document.getElementById('tp_div2'));
+        //console.log("yeahhhhh");
+      }
+
+      if(genimg != null){
+        // Wait for the chart to finish drawing before calling the getImageURI() method.
+        google.visualization.events.addListener(tpchart2, 'ready', function () {
+          tp_div2.innerHTML = '<img src="' + tpchart2.getImageURI() + '">';
+          //console.log(tp_div.innerHTML);
+        });
+      }
+
+      if(perserver){
+        tpchart2.draw(data, options2);
+      }else{
+        tpchart2.draw(data, options);
       }
 
       render=true;
@@ -1512,7 +1613,7 @@
   </head>
 
   <body onload="onLoadParams();">
-  <a href="http://10.10.88.136/puffd/graph.html" onclick="clearParams()"><i class="material-icons">home</i></a>
+  <a href="http://10.10.88.136/puffd/ycsb" onclick="clearParams()"><i class="material-icons">home</i></a>
  
     
    
@@ -1605,6 +1706,9 @@
     </tr>
     <tr>
         <div id="tp_div" style="height: 500px;"></div>
+    </tr>
+    <tr>
+        <div id="tp_div2" style="height: 500px;"></div>
     </tr>
     <tr>
         <td id="td_ravg">
