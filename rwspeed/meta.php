@@ -1,6 +1,7 @@
 
 <?php
     //echo "FETCH HELLO WORLD\n";
+    $dbhost="10.10.88.185";
     $runid="";
     $timestamp="";
     $os="";
@@ -34,7 +35,7 @@
    		 }	 	
 	}
 	
-	$con = mysql_connect("localhost","root",""); 
+	$con = mysql_connect($dbhost,"root","mapr"); 
 	if (!$con) 
 	{ 
 		die('Could not connect: ' . mysql_error()); 

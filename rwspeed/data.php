@@ -1,5 +1,6 @@
 <?php
 #echo "FETCH HELLO WORLD\n";
+$dbhost="10.10.88.185";
 $runid="";
 $timestamp="";
 $os="";
@@ -43,12 +44,14 @@ foreach ($_GET as $key => $value) {
     $mfsinstances=$value;
   }else if (strcasecmp($key,"description") == 0) {
     $desc=$value;
+  }else if (strcasecmp($key,"driver") == 0) {
+    $driver=$value;
   }else if (strcasecmp($key,"rows") == 0) {
     $rows=$value;
   }	 	
 }
 
-$con = mysql_connect("10.10.88.136","root",""); 
+$con = mysql_connect($dbhost,"root","mapr"); 
 if (!$con) 
 { 
   die('Could not connect: ' . mysql_error()); 
@@ -58,7 +61,7 @@ mysql_select_db("perfdb", $con);
 
 $statement = "SELECT runid,timestamp,os,build,mfsinstances,numsp,nodes,description,status,disktype,driver,secure,networkencryption,hadoopversion,repl1localread,repl1localwrite,repl1remoteread,repl1remotewrite,repl3localread,repl3localwrite,repl3remoteread,repl3remotewrite FROM tblrwspeed";
 
-if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($mfsinstances) || ! empty($runid) || ! empty($timestamp) || ! empty($desc)) {
+if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($mfsinstances) || ! empty($runid) || ! empty($timestamp) || ! empty($desc) || ! empty($driver)) {
   $statement=$statement." WHERE ";
 }
 
@@ -91,6 +94,12 @@ if (! empty($mfsinstances) ){
 if (! empty($desc) ){
   $statement=($appendAND)?$statement." AND ":$statement;
   $statement=$statement." description like '%".$desc."%' ";
+  $appendAND=TRUE;
+}
+
+if (! empty($driver) ){
+  $statement=($appendAND)?$statement." AND ":$statement;
+  $statement=$statement." driver like '%".$driver."%' ";
   $appendAND=TRUE;
 }
 

@@ -27,14 +27,14 @@
 
         <div class="sidebar-wrapper">
           <div class="logo">
-            <h2 class="text-danger"><small><a href="http://10.10.88.136/puffd/index.html" class="text-warning"><i class="ti-home" style="padding-right:5px;"></i></a>RWSpeedTest</small></h2>
+            <h2 class="text-danger"><small><a href="http://10.10.88.185/puffd/charts/index.html" class="text-warning"><i class="ti-home" style="padding-right:5px;"></i></a>RWSpeedTest</small></h2>
           </div>
 
           <ul class="nav">
             <li class="active"><a href="#runinfo_table_div"> <i class="ti-panel"></i><p>Dashboard</p></a></li>
             <li><a href="#chart1"> <i class="ti-view-list-alt"></i><p>Graphs</p></a></li>
             <li><a href="#chart3"> <i class="ti-view-list-alt"></i><p>Avg-Graphs</p></a></li>
-            <li><a href="#runinfo_table_div"> <i class="ti-view-list-alt"></i><p>Guts</p></a></li>
+            <li><a href="#guts"> <i class="ti-view-list-alt"></i><p>Guts</p></a></li>
           </ul>
         </div>
       </div>
@@ -73,7 +73,7 @@
                 <div class="content" id="runinfo_table_div" class="google-visualization-controls-theme-plus table "></div> <!--  class="ct-chart"></div> -->
                 <div class="footer">
                   <hr>
-                  <div class="stats">Test description: https://github.com/mapr/private-perf/blob/master/PerfTests/RWSpeedTest/README.md </div>
+                  <div class="stats">Test description: https://github.com/mapr/private-perf/blob/master/PerfTests/RWSpeedTest/README.md </div><br>
                   <div class="stats" id="displayurl1"></div>
                 </div>
             </div>
@@ -124,6 +124,13 @@
                       <td><input type="text" class="form-control border-input" id="plabelA4" ></td>
                     </tr>
                     <tr>
+                      <td><small>RunID</small></td>
+                      <td><input type="text" class="form-control border-input" id="prunidA1" ></td>
+                      <td><input type="text" class="form-control border-input" id="prunidA2" ></td>
+                      <td><input type="text" class="form-control border-input" id="prunidA3" ></td>
+                      <td><input type="text" class="form-control border-input" id="prunidA4" ></td>
+                    </tr>
+                    <tr>
                       <td><small>Build</small></td>
                       <td><input type="text" class="form-control border-input" id="pbuildA1" ></td>
                       <td><input type="text" class="form-control border-input" id="pbuildA2" ></td>
@@ -167,7 +174,9 @@
             <div class="header">
               <p class="category">Comparison of selected rows</p>
             </div>
-            <div id="chart1"></div>
+            <div> <p class="category">Percentage difference between selected rows</p> </div>
+            <div id="chart1"></div><br>
+            <div> <p class="category">Difference in throughput (MB/s/server)</p> </div>
             <div id="chart2"></div><br>
 
             <p class="category">Save these png</p>
@@ -181,7 +190,7 @@
             <div class="header">
               <p class="category">Average groups of results</p>
             </div>
-            <div id="chart3"></div>
+            <div id="chart3"></div><br>
             <div id="chart4"></div><br>
 
             <div id="table3" class="table table-striped"></div>
@@ -196,6 +205,58 @@
           </div>
         </div>
 
+        <div class="container-fluid row">
+          <div class="card col-md-12">
+            <div class="header">
+              <h4 class="title" id="guts"><small>GUTS<small></h4>
+            </div>
+            <div class="content table-plain"> <!--  Search tables for analysis -->
+              <table class="table table-striped" id="asearch1">
+                <col width="30">
+                <col width="10">
+                <col width="40">
+                <col width="40">
+                <col width="40">
+                <col width="40">
+              <tr>
+                <td><small>Exp1-Folder</small></td>
+                <td><input type="text" class="form-control border-input" id="pgutsF1"></td>
+                <td><small>Metric</small></td>
+                <td><input type="text" class="form-control border-input" id="pgutsC1" ></td>
+                <td><small>Machine#</small></td>
+                <td><input type="text" class="form-control border-input" id="pgutsM1" ></td>
+              </tr>
+              <tr>
+                <td><small>Exp2-Folder</small></td>
+                <td><input type="text" class="form-control border-input" id="pgutsF2" ></td>
+                <td><small>Metric</small></td>
+                <td><input type="text" class="form-control border-input" id="pgutsC2" ></td>
+                <td><small>Machine#</small></td>
+                <td><input type="text" class="form-control border-input" id="pgutsM2" ></td>
+              </tr>
+              <tr>
+                <td><small>Trace Name</small></td>
+                <td><input type="text" class="form-control border-input" id="pgutsN" ></td>
+              </tr>
+              </table>
+
+              <div class="footer">
+                <button type="submit" class="btn" onclick = "findGuts();"> Get GUTS table<i class="ti-pencil"></i></button>
+                <br/><br/>
+              </div>
+            </div>
+            <div class="card col-md-4">
+            <div class="content" id="test_table" class="google-visualization-controls-theme-plus table "></div>
+            </div>
+            <div class="card col-md-6">
+              <div class="content" id="test_table2" class="google-visualization-controls-theme-plus table "></div>
+            </div>
+            <div class="card col-md-12">
+              <div class="content" id="guts_chart1_div"></div>
+              <div id="guts_chart1_png_div"></div><br>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     </div>

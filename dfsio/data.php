@@ -1,6 +1,7 @@
 
 <?php
     #echo "FETCH HELLO WORLD\n";
+    $dbhost="10.10.88.185";
     $runid="";
     $timestamp="";
     $build="";
@@ -34,7 +35,7 @@
    		 }	 	
 	}
 
-	$con = mysql_connect("localhost","root",""); 
+	$con = mysql_connect($dbhost,"root","mapr"); 
 	if (!$con) 
 	{ 
 		die('Could not connect: ' . mysql_error()); 
@@ -42,7 +43,7 @@
 
 	mysql_select_db("perfdb", $con); 
 
-	$statement = "SELECT runid,timestamp,os,maprbuild,driver,description,disktype,hadoopversion,mfsinstances,writetp,readtp,teststatus,nodes,joblogs,configuration FROM tbldfsio";
+	$statement = "SELECT runid,timestamp,os,maprbuild,driver,description,disktype,hadoopversion,mfsinstances,writetp,readtp,teststatus,nodes FROM tbldfsio";
 
 	if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($driver) || ! empty($runid) || ! empty($timestamp) || ! empty($desc)) {
 		$statement=$statement." WHERE ";
@@ -114,9 +115,7 @@
 	  $meta=$meta."\"writetp\":".$row['writetp'].",";
 	  $meta=$meta."\"readtp\":".$row['readtp'].",";
 	  $meta=$meta."\"teststatus\":\"".$row['teststatus']."\",";
-	  $meta=$meta."\"nodes\":".$row['nodes'].",";
-	  $meta=$meta."\"joblogs\":".$row['joblogs'].",";
-	  $meta=$meta."\"configuration\":".$row['configuration'];
+	  $meta=$meta."\"nodes\":".$row['nodes'];
 	  
 	  $meta=$meta."}";
 	} 

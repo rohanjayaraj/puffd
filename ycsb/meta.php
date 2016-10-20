@@ -1,9 +1,11 @@
 
 <?php
     #echo "FETCH HELLO WORLD\n";
+    $dbhost="10.10.88.185";
     $runid="";
     $timestamp="";
     $build="";
+    $starred="";
     $os="";
     $driver="";
     $desc="";
@@ -31,10 +33,12 @@
    		 	$desc=$value;
    		 }else if (strcasecmp($key,"rows") == 0) {
    		 	$rows=$value;
-   		 }	 	
+   		 }else if (strcasecmp($key,"starred") == 0) {
+                        $starred=$value;
+                 }	 	
 	}
 
-	$con = mysql_connect("localhost","root",""); 
+	$con = mysql_connect($dbhost,"root","mapr"); 
 	if (!$con) 
 	{ 
 		die('Could not connect: ' . mysql_error()); 
@@ -44,7 +48,7 @@
 
 	$statement = "SELECT runid,timestamp,os,build,driver,totalcpus,totalmemory,disktype,numdisks,nummfs,totalspace,numclients,numnodes,tabletype,numtables,numregions,datasize,rowcount,rowsize,network,description FROM tblycsbrun";
 
-	if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($driver) || ! empty($runid) || ! empty($timestamp) || ! empty($desc)) {
+	if (! empty($runid) || ! empty($build) || ! empty($os) || ! empty($driver) || ! empty($runid) || ! empty($timestamp) || ! empty($desc) || ! empty($starred)) {
 		$statement=$statement." WHERE ";
 	}
 
@@ -73,6 +77,12 @@
 		$statement=$statement." driver like '%".$driver."%' ";
 		$appendAND=TRUE;
 	}
+	
+	if (! empty($starred) ){
+                $statement=($appendAND)?$statement." AND ":$statement;
+                $statement=$statement." starred in (".$starred.") ";
+                $appendAND=TRUE;
+        }
 
 	if (! empty($desc) ){
 		$statement=($appendAND)?$statement." AND ":$statement;

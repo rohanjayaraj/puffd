@@ -105,8 +105,8 @@
     var movavg = getUrlVars()["movavg"];
     var exgtavg = getUrlVars()["exludegtavg"];
 
-    var url=urlts==null?null:"http://10.10.88.136/puffd/ycsb/data.php?timestamp="+urlts;
-    var ycsbRunLogURL=urlts==null?null:"http://10.10.88.136/puffd/ycsb/datalog.php?timestamp="+urlts;
+    var url=urlts==null?null:"http://10.10.88.185/puffd/ycsb/data.php?timestamp="+urlts;
+    var ycsbRunLogURL=urlts==null?null:"http://10.10.88.185/puffd/ycsb/datalog.php?timestamp="+urlts;
 
     if(url != null){
       ycsbData = $.ajax({
@@ -117,6 +117,7 @@
     }
 
     var tabledata;
+    var starred = 0;
     var tablerows = getUrlVars()["rows"];
     if(!tablerows){
       tablerows = 10;
@@ -300,6 +301,12 @@
         document.getElementById('wp99_div').style.display = "block";
      }
 
+     function starSearch(){
+        starred = 1;
+        drawRunInfoTable();
+        starred = 0;
+     }
+
      function changeTableList(){
          tablerows = document.getElementById("tablelimit").value;
          urlts=null;
@@ -308,9 +315,13 @@
 
      function filterSearch(){
          pbuild = document.getElementById('buildSearch').value;
+         pbuild = pbuild.length==0?null:pbuild;
          pos = document.getElementById('osSearch').value;
+         pos = pos.length==0?null:pos;
          pdriver = document.getElementById('driverSearch').value;
+         pdriver = pdriver.length==0?null:pdriver;
          pdesc = document.getElementById('descSearch').value;
+         pdesc = pdesc.length==0?null:pdesc;
          urlts=null;
          drawRunInfoTable();
      }
@@ -330,9 +341,9 @@
       if (timestamp == null) {
         message = 'nothing';
       }else{
-         ycsbRunLogURL="http://10.10.88.136/puffd/ycsb/datalog.php?timestamp="+timestamp
+         ycsbRunLogURL="http://10.10.88.185/puffd/ycsb/datalog.php?timestamp="+timestamp
          ycsbData = $.ajax({
-          url: "http://10.10.88.136/puffd/ycsb/data.php?timestamp="+timestamp,
+          url: "http://10.10.88.185/puffd/ycsb/data.php?timestamp="+timestamp,
           dataType: "json",
           async: false
           }).responseText;
@@ -351,12 +362,16 @@
     }
 
     function drawRunInfoTable() {
-      var lurl = "http://10.10.88.136/puffd/ycsb/meta.php";
+      var lurl = "http://10.10.88.185/puffd/ycsb/meta.php";
       var param=false;
+      if(starred==1){
+        lurl+="?starred=1";
+        param=true;
+      }
       if(pbuild || pos || pdriver || urlts || pdesc)
       {
         if(pbuild != null){
-            lurl+="?build="+pbuild;
+            lurl+=(param?"&build=":"?build=")+pbuild;
             param=true;
         }
         if(pos != null){
@@ -376,7 +391,7 @@
         lurl+="&rows="+tablerows;
         onLoadParams();
       }else{
-        lurl+="?rows="+tablerows
+        lurl+=(param?"&rows=":"?rows=")+tablerows;
       }
       var ycsbMetadata = $.ajax({
           url: lurl,
@@ -1517,7 +1532,7 @@
   </head>
 
   <body onload="onLoadParams();">
-  <a href="http://10.10.88.136/puffd/ycsb" onclick="clearParams()"><i class="material-icons">home</i></a>
+  <a href="http://10.10.88.185/puffd/ycsb" onclick="clearParams()"><i class="material-icons">home</i></a>
  
     
    
@@ -1548,6 +1563,10 @@
           <td class="search-bar" >
             <input type="text" class="sfield" id="driverSearch" placeholder="Driver..." onkeydown = "if (event.keyCode == 13) document.getElementById('goSearch').click()"/>
             <input type="image" class="searchbutton" src="http://www.spheretekk.com/bc/images/search-icon.gif" alt="Search" onclick = "filterSearch();"/>
+          </td>
+          
+          <td  align="center">
+            <input type = "image" width="20px" height="20px" id = "starred" src="http://imgur.com/I0EwG.png" onclick = "starSearch();"/>
           </td>
 
           <td>

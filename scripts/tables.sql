@@ -4,6 +4,7 @@ CREATE DATABASE perfdb;
 USE perfdb;
 CREATE TABLE tblycsbrun (
          runid INT unsigned NOT NULL AUTO_INCREMENT,
+	 starred INT,
          timestamp BIGINT NOT NULL,
          os VARCHAR(50),
          build VARCHAR(50),

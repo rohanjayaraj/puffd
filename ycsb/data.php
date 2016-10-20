@@ -3,6 +3,7 @@
     #echo "FETCH HELLO WORLD\n";
     $runid="";
     $timestamp="";
+    $dbhost="10.10.88.185";
 
     foreach ($_GET as $key => $value) {
    		 #print("\n".$key." => ".$value);
@@ -19,7 +20,7 @@
    		 } 	
 	}
 
-	$con = mysql_connect("localhost","root",""); 
+	$con = mysql_connect($dbhost,"root","mapr"); 
 	if (!$con) 
 	{ 
 		die('Could not connect: ' . mysql_error()); 

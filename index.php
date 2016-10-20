@@ -336,11 +336,11 @@ function handleDFSIO($json)
         $values=NULL;
         $timestamp=NULL;
         
-        #echo 'Running handleDFSIO ::';
+        echo 'Running handleDFSIO ::';
         
         foreach($json as $key => $value) 
         {
-            #print($key." =>".$value);
+            print($key." =>".$value);
             if(!validDFSIOField($key))
             {
                 return -1;
@@ -349,12 +349,6 @@ function handleDFSIO($json)
              # Save timestamp value to validate if the row already exists
             if($key == "timestamp"){
                 $timestamp=$value;
-            }
-            else if($key == "joblogs"){
-                $value=mysql_real_escape_string($value);
-            } 
-            else if($key == "configuration"){
-                $value=mysql_real_escape_string($value);
             }else if($key == "nodes"){
                 $value=mysql_real_escape_string($value);
             }
@@ -393,12 +387,11 @@ function validDFSIOField($field){
         case "description":
         case "disktype":
         case "hadoopversion":
-        case "joblogs":
-        case "configuration":
         case "mfsinstances":
         case "writetp":
         case "readtp":
         case "teststatus":
+        case "encryption":
         case "nodes":
             $retval=true;
             break;
@@ -428,11 +421,6 @@ function handleTeraSort($json)
              # Save timestamp value to validate if the row already exists
             if($key == "timestamp"){
                 $timestamp=$value;
-            }
-            else if($key == "joblogs"){
-                $value=mysql_real_escape_string($value);
-            }else if($key == "configuration"){
-                $value=mysql_real_escape_string($value);
             }else if($key == "nodes"){
                 $value=mysql_real_escape_string($value);
             }
@@ -471,8 +459,6 @@ function validTeraSortField($field){
         case "description":
         case "disktype":
         case "hadoopversion":
-        case "joblogs":
-        case "configuration":
         case "nodes":
         case "runtime":
         case "secure":

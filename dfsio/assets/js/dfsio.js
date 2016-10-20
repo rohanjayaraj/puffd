@@ -10,7 +10,7 @@ var pbuildA1 = null, pbuildA2 = null, plabelA3 = null, plabelA4 = null;
 var pmfsA1 = null, pmfsA2 = null, pmfsA3 = null, pmfsA4 = null;
 var pdriverA1= null, pdriverA2= null, pdriverA3=null, pdriverA4=null;
 
-var url=urlts==null?null:"http://10.10.88.136/puffd/dfsio/data.php?runid="+urlts;
+var url=urlts==null?null:"http://10.10.88.185/puffd/dfsio/data.php?runid="+urlts;
 var lurl = null;
 
 
@@ -41,7 +41,7 @@ google.charts.setOnLoadCallback(drawRunInfoTable);
 //google.charts.setOnLoadCallback(init);
 
 function resetLurl() {
-  lurl = "http://10.10.88.136/puffd/dfsio/data.php";
+  lurl = "http://10.10.88.185/puffd/dfsio/data.php";
 }
 function getUrlVars() {
   var vars = {};
@@ -112,35 +112,37 @@ function drawRunInfoTable() {
   tabledata.addColumn('number', 'RunID');
   tabledata.addColumn('string', 'Build');
   tabledata.addColumn('number', '# of MFS');
-  tabledata.addColumn('number', '# of SP');
   tabledata.addColumn('number', 'Read Throughput');
   tabledata.addColumn('number', 'Write Throughput');
   /*Mitch these later on for easy viewing*/
   tabledata.addColumn('string', 'Timestamp');
   tabledata.addColumn('string', 'Desc');
   tabledata.addColumn('string', 'CLDB');
-  tabledata.addColumn('string', 'Secure');
-  tabledata.addColumn('string', 'NetEnc');
   tabledata.addColumn('string', 'HadoopVer');
 
+  //tabledata.addColumn('number', '# of SP');
+  //tabledata.addColumn('string', 'Secure');
+  //tabledata.addColumn('string', 'NetEnc');
+  
   for ( var i = 0; i < jsonData.length; i++) {
     var date = new Date(jsonData[i].timestamp*1000);
     tabledata.addRow([ jsonData[i].runid, 
         //jsonData[i].os, 
         jsonData[i].maprbuild,
-        jsonData[i].mfsinstances, jsonData[i].numsp,
-        /*jsonData[i].nodes, 
+        jsonData[i].mfsinstances, 
+        /*jsonData[i].numsp,
+        jsonData[i].nodes, 
           jsonData[i].status, jsonData[i].disktype,*/
         jsonData[i].readtp,
         jsonData[i].writetp,
         date.toString(),
         jsonData[i].description,
         jsonData[i].driver, 
-        jsonData[i].secure,
-        jsonData[i].networkencryption,
         jsonData[i].hadoopversion
     ]);
 
+        //jsonData[i].secure,
+        //jsonData[i].networkencryption,
   }
 
   if(table == null) {
