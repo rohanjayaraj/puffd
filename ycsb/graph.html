@@ -7,31 +7,24 @@
   .bold-font {
     font-weight: bold;
   }
-
   .italic-font {
     font-style: italic;
   }
-
   .large-font {
     font-size: 15px;
   }
-
   .grey-background {
     background-color: #EAEDED;
   }
-
   .blue-text {
     color: #3498DB;
   }
-
   .orange-text {
     color: #E67E22;
   }
-
   .red-text {
     color: #E74C3C;
   }
-
   .search-bar {
     height: 10px;
     background-color: #e1e1e1;
@@ -41,14 +34,12 @@
     position:relative;
     width:150px
   }
-
 .search-bar .searchbutton {
     position:absolute;
     top:0%;
     right:0px;
     height:20px;
   }
-
 .sfield {
     float: left;
     margin: 0px 0 0 8px;
@@ -63,27 +54,23 @@
     border: 0;
     max-width: 150px
   }
-
 .headerstyle{
   background: #31D3AB;
   font: 12px Courier;
   text-align: center;
   font-weight: bold;  
 }
-
 .mystyle {
     color: #072832;
     font: 11px Verdana;
     text-align: center;                         
 }
-
 .checkboxtext
 {
   /* Checkbox text */
   font-size: 100%;
   display: inline;
 }
-
 </style>
     <!--Load the AJAX API-->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -96,7 +83,8 @@
     var hasread=false;
     var haswrite=false;
     var genimg = getUrlVars()["img"];
-    var urlts = getUrlVars()["runid"];
+    var urlri = getUrlVars()["runid"];
+    var urlts = getUrlVars()["timestamp"];
     var pbuild = getUrlVars()["build"];
     var pos = getUrlVars()["os"];
     var pdriver = getUrlVars()["driver"];
@@ -104,10 +92,8 @@
     var trend = getUrlVars()["trends"];
     var movavg = getUrlVars()["movavg"];
     var exgtavg = getUrlVars()["exludegtavg"];
-
-    var url=urlts==null?null:"http://dash.perf.lab/puffd/ycsb/data.php?timestamp="+urlts;
-    var ycsbRunLogURL=urlts==null?null:"http://dash.perf.lab/puffd/ycsb/datalog.php?timestamp="+urlts;
-
+    var url=urlts==null?urlri==null?null:"http://dash.perf.lab/puffd/ycsb/data.php?runid="+urlri:"http://dash.perf.lab/puffd/ycsb/data.php?timestamp="+urlts;
+    var ycsbRunLogURL=urlts==null?urlri==null?null:"http://dash.perf.lab/puffd/ycsb/datalog.php?runid="+urlri:"http://dash.perf.lab/puffd/ycsb/datalog.php?timestamp="+urlts;
     if(url != null){
       ycsbData = $.ajax({
             url: url,
@@ -115,14 +101,12 @@
             async: false
             }).responseText;
     }
-
     var tabledata;
     var starred = 0;
     var tablerows = getUrlVars()["rows"];
     if(!tablerows){
       tablerows = 10;
     }
-
     var table;
     var statstable;
     var tpchart;
@@ -141,18 +125,14 @@
     var throughputchart = [];
     var throughputdivs = [];
     
-
     var selectedRows = [];
-
     // Load the Visualization API and the piechart package.
     //google.charts.load('current', {'packages':['table']});
     google.charts.load('current', {'packages':['corechart', 'table', 'line']});
       
     // Set a callback to run when the Google Visualization API is loaded.
     google.charts.setOnLoadCallback(drawRunInfoTable);
-
     google.charts.setOnLoadCallback(init);
-
      function getUrlVars() {
         var vars = {};
         var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
@@ -160,7 +140,6 @@
         });
         return vars;
       }
-
       function onLoadParams(){
         var myPopup = document.getElementById('tablelimit');
         for (var i = 0; i < myPopup.options.length; i++) {
@@ -200,7 +179,6 @@
         movavg = null;
         exgtavg = null;
      }
-
      function init(){
       
       if(ycsbData==null){
@@ -212,7 +190,6 @@
         return;
       }
       drawStatsTable();
-
       if(hasread){
         showReadCharts();
         // Draw Read Avg 
@@ -226,7 +203,6 @@
       }else{
         hideReadCharts();
       }
-
       if(haswrite){
          showWriteCharts();
         // Draw write charts
@@ -240,14 +216,12 @@
       }
       handleTrendCharts2();
      }
-
      function handleTrendCharts2(){
         if(trend != null){
            document.getElementById('charts').checked = true;
         }
         handleTrendCharts();
      }
-
      function handleTrendCharts(){
         if (document.getElementById('charts').checked && ycsbRunLogURL != null) 
         {
@@ -264,27 +238,22 @@
         }
         drawTrendCharts();
      }
-
      function hideReadCharts(){
         document.getElementById('ravg_div').style.display = "none";
         document.getElementById('rmax_div').style.display = "none";
         document.getElementById('rmin_div').style.display = "none";
         document.getElementById('rp95_div').style.display = "none";
         document.getElementById('rp99_div').style.display = "none";
-
         
       }
-
       function hideWriteCharts(){
         document.getElementById('wavg_div').style.display = "none";
         document.getElementById('wmax_div').style.display = "none";
         document.getElementById('wmin_div').style.display = "none";
         document.getElementById('wp95_div').style.display = "none";
         document.getElementById('wp99_div').style.display = "none";
-
         
       }
-
      function showReadCharts(){
         document.getElementById('ravg_div').style.display = "block";
         document.getElementById('rmax_div').style.display = "block";
@@ -292,7 +261,6 @@
         document.getElementById('rp95_div').style.display = "block";
         document.getElementById('rp99_div').style.display = "block";
      }
-
      function showWriteCharts(){
         document.getElementById('wavg_div').style.display = "block";
         document.getElementById('wmax_div').style.display = "block";
@@ -300,19 +268,16 @@
         document.getElementById('wp95_div').style.display = "block";
         document.getElementById('wp99_div').style.display = "block";
      }
-
      function starSearch(){
         starred = 1;
         drawRunInfoTable();
         starred = 0;
      }
-
      function changeTableList(){
          tablerows = document.getElementById("tablelimit").value;
          urlts=null;
          drawRunInfoTable();
      }
-
      function filterSearch(){
          pbuild = document.getElementById('buildSearch').value;
          pbuild = pbuild.length==0?null:pbuild;
@@ -325,25 +290,24 @@
          urlts=null;
          drawRunInfoTable();
      }
-
      function selectHandler(e) {
       var selection = table.getSelection();
       var message = '';
-      var timestamp;
+      var runids;
       for (var i = 0; i < selection.length; i++) {
         var item = selection[i];
         if (item.row != null) {
           var str = tabledata.getFormattedValue(item.row, 0);
-          timestamp=timestamp==null?str:timestamp+","+str;
+          runids=runids==null?str:runids+","+str;
           message += '{row:' + item.row + ', column:none}; value (col 0) = ' + str + '\n';
         }
       }
-      if (timestamp == null) {
+      if (runids == null) {
         message = 'nothing';
       }else{
-         ycsbRunLogURL="http://dash.perf.lab/puffd/ycsb/datalog.php?timestamp="+timestamp
+         ycsbRunLogURL="http://dash.perf.lab/puffd/ycsb/datalog.php?runid="+runids
          ycsbData = $.ajax({
-          url: "http://dash.perf.lab/puffd/ycsb/data.php?timestamp="+timestamp,
+          url: "http://dash.perf.lab/puffd/ycsb/data.php?runid="+runids,
           dataType: "json",
           async: false
           }).responseText;
@@ -351,16 +315,15 @@
           //console.log(ycsbData);
           var newurl = window.location.href;    
           if (newurl.indexOf('?') == -1){
-             newurl += '?runid='+timestamp;
+             newurl += '?runid='+runids;
           }else{
-            newurl = newurl.substring(0, newurl.indexOf('?')) + '?runid='+timestamp;
+            newurl = newurl.substring(0, newurl.indexOf('?')) + '?runid='+runids;
           }
           window.history.replaceState("object or string", "Title", newurl);
       }
       //alert(message);
       init();
     }
-
     function drawRunInfoTable() {
       var lurl = "http://dash.perf.lab/puffd/ycsb/meta.php";
       var param=false;
@@ -401,8 +364,8 @@
       //alert('Metadata ' + lurl);
       var jsonData = JSON.parse(ycsbMetadata);
       tabledata = new google.visualization.DataTable();
-
       tabledata.addColumn('string', 'RunID');
+      tabledata.addColumn('string', 'Timestamp');
       tabledata.addColumn('string', 'Description');
       tabledata.addColumn('string', 'Date');
       tabledata.addColumn('string', 'OS');
@@ -423,11 +386,11 @@
       tabledata.addColumn('string', 'Disk Type');
       tabledata.addColumn('number', '# of Disks/node');
       tabledata.addColumn('number', '# of MFS');
-
       for ( var i = 0; i < jsonData.length; i++) {
          var date = new Date(jsonData[i].timestamp);
          var datasize = jsonData[i].datasize/(1024*1024*1024);
-         tabledata.addRow([""+jsonData[i].timestamp, 
+         tabledata.addRow([""+jsonData[i].runid, 
+         ""+jsonData[i].timestamp,
          jsonData[i].description, 
          date.toString(),
          jsonData[i].os, 
@@ -450,7 +413,6 @@
          jsonData[i].nummfs
         ]);
       }
-
       var cssClasses = {'headerCell': 'googleHeaderCell', 'oddTableRow': 'grey-background', 'selectedTableRow' : 'italic-font blue-text'};
       if(tpchart == null) {
         table = new google.visualization.Table(document.getElementById('runinfo_table_div'));
@@ -458,7 +420,6 @@
       }
       table.draw(tabledata, {'showRowNumber': true, 'width': '100%', 'alternatingRowStyle': true, 'cssClassNames': cssClasses});
     }
-
     function drawStatsTable(){
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -466,7 +427,6 @@
       data.addColumn('string','Workload');
       data.addColumn('string','Type');
       data.addColumn('number','Threads');
-
       data.addColumn('number','Throughput (ops/sec/client)');
       data.addColumn('number','Write Avg Latency (μs)');
       data.addColumn('number','Write Min Latency (μs)');
@@ -507,7 +467,6 @@
             cols[idx++]=rundata[j].wp95;
             cols[idx++]=rundata[j].wp99;
          }
-
          if(rundata[j].wrkldtype == "LOAD" || rundata[j].wrkldtype == "DELETE"){
             cols[idx++]=null;
             cols[idx++]=null;
@@ -525,14 +484,12 @@
          data.setRowProperty(i+j,'style', 'background-color:red');
         }
       }
-
       var cssClasses = {'headerCell': 'headerstyle', 'tableCell':'mystyle'};
       if(statstable == null) {
         statstable = new google.visualization.Table(document.getElementById('stats_table_div'));
       }
       statstable.draw(data, {'allowHtml':true, 'showRowNumber': true, 'width': '95%', 'cssClassNames': cssClasses});
     }
-
     function drawThroughputChart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -598,7 +555,6 @@
            }
            data.addRow(cols);
       }
-
       if(genimg == null && jsonData.length == 2){
         for(var i = 1; i < alldata.length; i++) {
           var cols = [];
@@ -614,7 +570,6 @@
           data.addRow(cols);
         }
       }
-
       var options = {
         title : 'Throughput (Client)',
         vAxis: {title: 'ops/sec/client', gridlines: { count: 10 }},
@@ -629,7 +584,6 @@
           }
         }
       };
-
       var options2 = {
         title : 'Throughput (Server)',
         vAxis: {title: 'ops/sec/server', gridlines: { count: 10 }},
@@ -644,12 +598,10 @@
           }
         }
       };
-
       if(tpchart == null) {
         tpchart = new google.visualization.ComboChart(document.getElementById('tp_div'));
         //console.log("yeahhhhh");
       }
-
       if(genimg != null){
         // Wait for the chart to finish drawing before calling the getImageURI() method.
         google.visualization.events.addListener(tpchart, 'ready', function () {
@@ -657,16 +609,13 @@
           //console.log(tp_div.innerHTML);
         });
       }
-
       if(perserver){
         tpchart.draw(data, options2);
       }else{
         tpchart.draw(data, options);
       }
-
       render=true;
     }
-
     function drawReadAvgChart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -696,14 +645,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Read Average Latency',
         vAxis: {title: 'time (μs)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
       if(ravgchart == null) {
         ravgchart = new google.visualization.ComboChart(document.getElementById('ravg_div'));
       }
@@ -715,7 +662,6 @@
       }
       ravgchart.draw(data, options);
     }
-
     function drawReadMinChart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -745,14 +691,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Read Min Latency',
         vAxis: {title: 'time (μs)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
       if(rminchart == null) {
         rminchart = new google.visualization.ComboChart(document.getElementById('rmin_div'));
       }
@@ -794,14 +738,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Read Max Latency',
         vAxis: {title: 'time (μs)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
       if(rmaxchart == null){
         rmaxchart = new google.visualization.ComboChart(document.getElementById('rmax_div'));
       }
@@ -813,7 +755,6 @@
       }
       rmaxchart.draw(data, options);
     }
-
     function drawReadp95Chart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -843,14 +784,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Read 95%ile Latency',
         vAxis: {title: 'time (ms)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
        if(rp95chart == null){
          rp95chart = new google.visualization.ComboChart(document.getElementById('rp95_div'));
        }
@@ -862,7 +801,6 @@
       }
       rp95chart.draw(data, options);
     }
-
     function drawReadp99Chart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -892,14 +830,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Read 99%ile Latency',
         vAxis: {title: 'time (ms)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
        if(rp99chart == null){
           rp99chart = new google.visualization.ComboChart(document.getElementById('rp99_div'));
       }
@@ -911,7 +847,6 @@
       }
       rp99chart.draw(data, options);
     }
-
     function drawWriteAvgChart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -941,14 +876,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Write Average Latency',
         vAxis: {title: 'time (μs)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
       if(wavgchart == null) {
         wavgchart = new google.visualization.ComboChart(document.getElementById('wavg_div'));
       }
@@ -960,7 +893,6 @@
       }
       wavgchart.draw(data, options);
     }
-
     function drawWriteMinChart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -990,14 +922,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Write Min Latency',
         vAxis: {title: 'time (μs)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
       if(wminchart == null) {
         wminchart = new google.visualization.ComboChart(document.getElementById('wmin_div'));
       }
@@ -1039,14 +969,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Write Max Latency',
         vAxis: {title: 'time (μs)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
       if(wmaxchart == null){
         wmaxchart = new google.visualization.ComboChart(document.getElementById('wmax_div'));
       }
@@ -1058,7 +986,6 @@
       }
       wmaxchart.draw(data, options);
     }
-
     function drawWritep95Chart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -1088,14 +1015,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Write 95%ile Latency',
         vAxis: {title: 'time (ms)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
        if(wp95chart == null){
          wp95chart = new google.visualization.ComboChart(document.getElementById('wp95_div'));
        }
@@ -1107,7 +1032,6 @@
       }
       wp95chart.draw(data, options);
     }
-
     function drawWritep99Chart() {
       var jsonData = JSON.parse(ycsbData);
       var data = new google.visualization.DataTable();
@@ -1137,14 +1061,12 @@
            }
            data.addRow(cols);
       }
-
       var options = {
         title : 'Write 99%ile Latency',
         vAxis: {title: 'time (ms)'},
         //hAxis: {title: 'Run'},
         seriesType: 'bars'
       };
-
        if(wp99chart == null){
         wp99chart = new google.visualization.ComboChart(document.getElementById('wp99_div'));
       }
@@ -1156,28 +1078,22 @@
       }
       wp99chart.draw(data, options);
     }
-
     function hideTrendCharts(){
         for(var i=0; i < trenddivs.length; i++){
           trenddivs[i].style.display = "none";
         }
-
         for(var i=0; i < throughputdivs.length; i++){
           throughputdivs[i].style.display = "none";
         }
       }
-
       function showTrendCharts(){
         for(var i=0; i < trenddivs.length; i++){
           trenddivs[i].style.display = "block";
         }
-
         for(var i=0; i < throughputdivs.length; i++){
           throughputdivs[i].style.display = "block";
         }
       }
-
-
     function drawTrendCharts() {
       if(ycsbRunData == null || ycsbRunData.length < 10){
         // Hide charts
@@ -1187,7 +1103,6 @@
       }else{
          showTrendCharts();
       }
-
       var avgarr = [];
       var jsonStats = JSON.parse(ycsbData);
       for ( var i = 0; i < jsonStats.length; i++) {
@@ -1204,7 +1119,6 @@
             }
           }
       }
-
       var dataarr = [];
       var opsarr = [];
       var jsonData = JSON.parse(ycsbRunData);
@@ -1212,7 +1126,6 @@
       range=movavg!=null?movavg:range;
       var excludeavg=document.getElementById("excludegtavg").value;
       excludeavg=exgtavg!=null?exgtavg:excludeavg;
-
       for ( var i = 0; i < jsonData.length; i++) {
          var col = null;
          var rundata=jsonData[i].data;
@@ -1221,7 +1134,6 @@
           }else{
             col=""+jsonData[i].timestamp;
           }
-
           for ( var j = 0; j < rundata.length; j++) {
               var data = dataarr[j];
               if(data == null){
@@ -1245,7 +1157,6 @@
               opsdata.addColumn('number', col+"-runrate");
           }
       }
-
       var wrklddataarr = [];
       var wrkldopsdataarr = [];
       var wrkldnames= [];
@@ -1261,7 +1172,6 @@
             wrkldtypes[j]=rundata[j].wrkldtype;
             wrkldloglen[j]=0;
           }
-
           var cols = wrklddataarr[j];
           if(cols == null){
             cols = new Array();
@@ -1272,7 +1182,6 @@
             opscols = new Array();
             wrkldopsdataarr[j] = opscols;
           }
-
           var logdata=rundata[j].log;
           if( wrkldloglen[j]<logdata.length){
             wrkldloglen[j]=logdata.length;
@@ -1300,11 +1209,9 @@
             }else{
               var myVar = avgstats[j];
               if (typeof myVar === 'string' || myVar instanceof String){
-
               }else{
                 alert("not a string; it cannot be! sigh");
               }
-
               var res = avgstats[j].split(",");
               var idx=2*i;
               if(excludeavg > 0){
@@ -1340,13 +1247,11 @@
           }
          }
       }
-
       for(var k=0; k < wrklddataarr.length; k++){
         var cols = wrklddataarr[k];
         var data = dataarr[k];
         var opscols = wrkldopsdataarr[k];
         var opsdata = opsarr[k];
-
         var avgcol = [];
         var avgopscol = [];
         var l = 0;
@@ -1359,7 +1264,6 @@
               avgopscol[m]=0;
             }
           }
-
           if(l != range && range > 0){
              for(var m=1; m < cols[j].length; m++){
                 avgcol[m]+=cols[j][m];
@@ -1375,14 +1279,12 @@
               }
               data.addRow(avgcol);
               avgcol.length = 0;
-
               avgopscol[0]=opscols[j][0];
               for(var i=1;i<avgopscol.length;i++){
                 avgopscol[i]=Math.floor(avgopscol[i]/l);
               }
               opsdata.addRow(avgopscol);
               avgopscol.length = 0;
-
               l=0;
             }else{
               data.addRow(cols[j]);
@@ -1391,7 +1293,6 @@
           }
         }
       }
-
       for(var k=0; k < opsarr.length; k++){
         var options = {
           chart: {
@@ -1411,7 +1312,6 @@
           hAxis: {format: 'none'},
           height: 500
         };
-
         var options2 = {
           title: 'Throughput Trend for \''+ wrkldnames[k] + '\' ' + (range>0?'( '+range+ 's moving average)':''),
           chartArea: {  width: "60%", height: "70%" },
@@ -1426,7 +1326,6 @@
           height: 600
           //,colors: ['#a52714', '#097138']  
         };
-
         var data = opsarr[k];
         var iDiv = throughputdivs[k];
         if(iDiv == null){
@@ -1438,7 +1337,6 @@
           document.getElementsByTagName('body')[0].appendChild(iDiv);
           throughputdivs[k]=iDiv;
         }
-
          
         var chart = throughputchart[k];
         if(chart == null){
@@ -1446,7 +1344,6 @@
           //chart = new google.charts.Line(iDiv);
           throughputchart[k]=chart;
         }
-
         options=options2;
         if(genimg != null){
           // Wait for the chart to finish drawing before calling the getImageURI() method.
@@ -1454,10 +1351,8 @@
           iDiv.innerHTML = '<img src="' + chart.getImageURI() + '">';
           });
         }
-
         chart.draw(data, options);         
       }      
-
       for(var k=0; k < dataarr.length; k++){
         var options = {
           chart: {
@@ -1478,7 +1373,6 @@
           hAxis: {format: 'none'},
           height: 500
         };
-
         var options2 = {
           title: 'Latency Trend for \''+ wrkldnames[k] + '\' ' + (range>0?'( '+range+ 's moving average)':''),
           chartArea: {  width: "60%", height: "70%" },
@@ -1494,7 +1388,6 @@
           height: 600
           //,colors: ['#a52714', '#097138']  
         };
-
         var data = dataarr[k];
         var iDiv = trenddivs[k];
         if(iDiv == null){
@@ -1506,7 +1399,6 @@
           document.getElementsByTagName('body')[0].appendChild(iDiv);
           trenddivs[k]=iDiv;
         }
-
          
         var chart = trendchart[k];
         if(chart == null){
@@ -1514,7 +1406,6 @@
           //chart = new google.charts.Line(iDiv);
           trendchart[k]=chart;
         }
-
         options=options2;
         if(genimg != null){
           // Wait for the chart to finish drawing before calling the getImageURI() method.
@@ -1522,12 +1413,10 @@
           iDiv.innerHTML = '<img src="' + chart.getImageURI() + '">';
           });
         }
-
         chart.draw(data, options);         
       }
       
     }
-
     </script>
   </head>
 
