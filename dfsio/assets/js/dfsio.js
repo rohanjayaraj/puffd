@@ -10,7 +10,7 @@ var pbuildA1 = null, pbuildA2 = null, plabelA3 = null, plabelA4 = null;
 var pmfsA1 = null, pmfsA2 = null, pmfsA3 = null, pmfsA4 = null;
 var pdriverA1= null, pdriverA2= null, pdriverA3=null, pdriverA4=null;
 
-var url=urlts==null?null:"http://10.10.88.185/puffd/dfsio/data.php?runid="+urlts;
+var url=urlts==null?null:"http://dash.perf.lab/puffd/dfsio/data.php?runid="+urlts;
 var lurl = null;
 
 
@@ -41,7 +41,7 @@ google.charts.setOnLoadCallback(drawRunInfoTable);
 //google.charts.setOnLoadCallback(init);
 
 function resetLurl() {
-  lurl = "http://10.10.88.185/puffd/dfsio/data.php";
+  lurl = "http://dash.perf.lab/puffd/dfsio/data.php";
 }
 function getUrlVars() {
   var vars = {};

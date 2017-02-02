@@ -10,7 +10,7 @@ var pbuildA1 = null, pbuildA2 = null, pbuildA3= null, pbuildA4= null;
 var pmfsA1 = null, pmfsA2 = null, pmfsA3 = null, pmfsA4 = null;
 var pdriverA1= null, pdriverA2= null, pdriverA3=null, pdriverA4=null;
 
-var lurl = "http://10.10.88.185/puffd/rwspeed/data.php";
+var lurl = "http://dash.perf.lab/puffd/rwspeed/data.php";
 var purl1 = "";
 var purl2 = "";
 var purl3 = "";
@@ -35,7 +35,7 @@ google.charts.setOnLoadCallback(drawRunInfoTable);
 //google.charts.setOnLoadCallback(init);
 
 function resetLurl() {
-  lurl = "http://10.10.88.185/puffd/rwspeed/data.php";
+  lurl = "http://dash.perf.lab/puffd/rwspeed/data.php";
 }
 function getUrlVars() {
   var vars = {};
@@ -175,7 +175,7 @@ function findGuts() {
   var gutsN= document.getElementById('pgutsN').value;
   var param=false;
 
-  var gurl = "http://10.10.88.185/puffd/rwspeed/guts_data.php";
+  var gurl = "http://dash.perf.lab/puffd/rwspeed/guts_data.php";
   if (gutsF1 != "") {
     if (param) { gurl += "&f1="+gutsF1; }
     else { gurl += "?f1="+gutsF1;}

@@ -105,8 +105,8 @@
     var movavg = getUrlVars()["movavg"];
     var exgtavg = getUrlVars()["exludegtavg"];
 
-    var url=urlts==null?null:"http://10.10.88.185/puffd/ycsb/data.php?timestamp="+urlts;
-    var ycsbRunLogURL=urlts==null?null:"http://10.10.88.185/puffd/ycsb/datalog.php?timestamp="+urlts;
+    var url=urlts==null?null:"http://dash.perf.lab/puffd/ycsb/data.php?timestamp="+urlts;
+    var ycsbRunLogURL=urlts==null?null:"http://dash.perf.lab/puffd/ycsb/datalog.php?timestamp="+urlts;
 
     if(url != null){
       ycsbData = $.ajax({
@@ -341,9 +341,9 @@
       if (timestamp == null) {
         message = 'nothing';
       }else{
-         ycsbRunLogURL="http://10.10.88.185/puffd/ycsb/datalog.php?timestamp="+timestamp
+         ycsbRunLogURL="http://dash.perf.lab/puffd/ycsb/datalog.php?timestamp="+timestamp
          ycsbData = $.ajax({
-          url: "http://10.10.88.185/puffd/ycsb/data.php?timestamp="+timestamp,
+          url: "http://dash.perf.lab/puffd/ycsb/data.php?timestamp="+timestamp,
           dataType: "json",
           async: false
           }).responseText;
@@ -362,7 +362,7 @@
     }
 
     function drawRunInfoTable() {
-      var lurl = "http://10.10.88.185/puffd/ycsb/meta.php";
+      var lurl = "http://dash.perf.lab/puffd/ycsb/meta.php";
       var param=false;
       if(starred==1){
         lurl+="?starred=1";
@@ -1532,7 +1532,7 @@
   </head>
 
   <body onload="onLoadParams();">
-  <a href="http://10.10.88.185/puffd/ycsb" onclick="clearParams()"><i class="material-icons">home</i></a>
+  <a href="http://dash.perf.lab/puffd/ycsb" onclick="clearParams()"><i class="material-icons">home</i></a>
  
     
    

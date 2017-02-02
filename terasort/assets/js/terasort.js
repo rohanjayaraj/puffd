@@ -29,7 +29,7 @@ google.charts.setOnLoadCallback(drawRunInfoTable);
 //google.charts.setOnLoadCallback(init);
 
 function resetLurl() {
-  lurl = "http://10.10.88.185/puffd/terasort/meta.php";
+  lurl = "http://dash.perf.lab/puffd/terasort/meta.php";
 }
 function getUrlVars() {
   var vars = {};

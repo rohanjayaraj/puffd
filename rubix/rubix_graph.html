@@ -112,7 +112,7 @@
   google.charts.setOnLoadCallback(drawRunInfoTable);
 
   function drawRunInfoTable() {
-    var lurl = "http://10.10.88.185/puffd/rubix/meta.php";
+    var lurl = "http://dash.perf.lab/puffd/rubix/meta.php";
     var param=false;
 lurl+="?rows=10";
 var rubixMetadata = $.ajax({
@@ -183,9 +183,9 @@ function selectHandler(e) {
   if (timestamp == null) {
     message = 'nothing';
   }else{
-    //ycsbRunLogURL="http://10.10.88.185/puffd/ycsb/datalog.php?timestamp="+timestamp
+    //ycsbRunLogURL="http://dash.perf.lab/puffd/ycsb/datalog.php?timestamp="+timestamp
     rubixData = $.ajax({
-      url: "http://10.10.88.185/puffd/rubix/data.php?timestamp="+timestamp,
+      url: "http://dash.perf.lab/puffd/rubix/data.php?timestamp="+timestamp,
       dataType: "json",
       async: false
     }).responseText;
@@ -638,7 +638,7 @@ function drawConsumerCompLZ4ReplThree() {
 </head>
 
 <body>
-  <a href="http://10.10.88.185/puffd/rubix"><i class="material-icons">home</i></a>
+  <a href="http://dash.perf.lab/puffd/rubix"><i class="material-icons">home</i></a>
   <h1 align="center" style="font-style: normal"> Summary of Rubix Results </h1>
   <br>
   <div id="runinfo_table_div"></div>
